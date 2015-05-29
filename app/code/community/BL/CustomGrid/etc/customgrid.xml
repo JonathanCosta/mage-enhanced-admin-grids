@@ -364,6 +364,15 @@
                         <order_field_name>customer_dob</order_field_name>
                     </config_params>
                 </customer_dob>
+
+                <customer_email model="customgrid/custom_column_order_base" module="customgrid">
+                    <name>Email</name>
+                    <group>Customer</group>
+                    <allow_renderers>1</allow_renderers>
+                    <config_params>
+                        <order_field_name>customer_email</order_field_name>
+                    </config_params>
+                </customer_email>
             </custom_columns>
         </sales_order>
         

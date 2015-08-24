@@ -9,18 +9,27 @@
  *
  * @category   BL
  * @package    BL_CustomGrid
- * @copyright  Copyright (c) 2014 Benoît Leulliette <benoit.leulliette@gmail.com>
+ * @copyright  Copyright (c) 2015 Benoît Leulliette <benoit.leulliette@gmail.com>
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
 class BL_CustomGrid_Grid_ProfileController extends BL_CustomGrid_Controller_Grid_Action
 {
-    protected function _setActionSuccessJsonResponse(array $actions=array())
+    protected function _setActionSuccessJsonResponse(array $actions = array())
     {
         return parent::_setActionSuccessJsonResponse(array('actions' => $actions));
     }
     
-    protected function _prepareFormLayout($actionCode, $permissions=null, $anyPermission=true)
+    /**
+     * Initialize the current grid model and profile, check the given permissions,
+     * then prepare the layout for the given profile action
+     * 
+     * @param string $actionCode Profile action
+     * @param string|array $permissions Required user permission(s)
+     * @param bool $anyPermission Whether all the given permissions are required, or just one of them
+     * @return BL_CustomGrid_Grid_ProfileController
+     */
+    protected function _prepareFormLayout($actionCode, $permissions = null, $anyPermission = true)
     {
         $handles = array('blcg_empty');
         $error = false;
@@ -46,11 +55,12 @@ class BL_CustomGrid_Grid_ProfileController extends BL_CustomGrid_Controller_Grid
         
         if ($error !== false) {
             if ($errorBlock = $this->getLayout()->getBlock('blcg.grid_profile.form_error')) {
+                /** @var $errorBlock Mage_Adminhtml_Block_Template */
                 $errorBlock->setErrorText($error);
             }
         } elseif ($containerBlock = $this->getLayout()->getBlock('blcg.grid_profile.form_container')) {
-            $containerBlock->setProfileId($gridProfile->getId())
-                ->setActionCode($actionCode);
+            /** @var $containerBlock BL_CustomGrid_Block_Grid_Profile_Form_Container */
+            $containerBlock->setProfileId($gridProfile->getId())->setActionCode($actionCode);
         }
         
         return $this;
@@ -75,11 +85,11 @@ class BL_CustomGrid_Grid_ProfileController extends BL_CustomGrid_Controller_Grid
         $this->_prepareFormLayout(
             'default',
             array(
-                BL_CustomGrid_Model_Grid::ACTION_CHOOSE_OWN_USER_DEFAULT_PROFILE,
-                BL_CustomGrid_Model_Grid::ACTION_CHOOSE_OTHER_USERS_DEFAULT_PROFILE,
-                BL_CustomGrid_Model_Grid::ACTION_CHOOSE_OWN_ROLE_DEFAULT_PROFILE,
-                BL_CustomGrid_Model_Grid::ACTION_CHOOSE_OTHER_ROLES_DEFAULT_PROFILE,
-                BL_CustomGrid_Model_Grid::ACTION_CHOOSE_GLOBAL_DEFAULT_PROFILE,
+                BL_CustomGrid_Model_Grid_Sentry::ACTION_CHOOSE_OWN_USER_DEFAULT_PROFILE,
+                BL_CustomGrid_Model_Grid_Sentry::ACTION_CHOOSE_OTHER_USERS_DEFAULT_PROFILE,
+                BL_CustomGrid_Model_Grid_Sentry::ACTION_CHOOSE_OWN_ROLE_DEFAULT_PROFILE,
+                BL_CustomGrid_Model_Grid_Sentry::ACTION_CHOOSE_OTHER_ROLES_DEFAULT_PROFILE,
+                BL_CustomGrid_Model_Grid_Sentry::ACTION_CHOOSE_GLOBAL_DEFAULT_PROFILE,
             )
         );
         $this->renderLayout();
@@ -111,7 +121,7 @@ class BL_CustomGrid_Grid_ProfileController extends BL_CustomGrid_Controller_Grid
     
     public function copyToNewFormAction()
     {
-        $this->_prepareFormLayout('copy_new', BL_CustomGrid_Model_Grid::ACTION_COPY_PROFILES_TO_NEW);
+        $this->_prepareFormLayout('copy_new', BL_CustomGrid_Model_Grid_Sentry::ACTION_COPY_PROFILES_TO_NEW);
         $this->renderLayout();
     }
     
@@ -154,7 +164,7 @@ class BL_CustomGrid_Grid_ProfileController extends BL_CustomGrid_Controller_Grid
     
     public function copyToExistingFormAction()
     {
-        $this->_prepareFormLayout('copy_existing', BL_CustomGrid_Model_Grid::ACTION_COPY_PROFILES_TO_EXISTING);
+        $this->_prepareFormLayout('copy_existing', BL_CustomGrid_Model_Grid_Sentry::ACTION_COPY_PROFILES_TO_EXISTING);
         $this->renderLayout();
     }
     
@@ -197,7 +207,7 @@ class BL_CustomGrid_Grid_ProfileController extends BL_CustomGrid_Controller_Grid
     
     public function editFormAction()
     {
-        $this->_prepareFormLayout('edit', BL_CustomGrid_Model_Grid::ACTION_EDIT_PROFILES);
+        $this->_prepareFormLayout('edit', BL_CustomGrid_Model_Grid_Sentry::ACTION_EDIT_PROFILES);
         $this->renderLayout();
     }
     
@@ -235,7 +245,7 @@ class BL_CustomGrid_Grid_ProfileController extends BL_CustomGrid_Controller_Grid
     
     public function assignFormAction()
     {
-        $this->_prepareFormLayout('assign', BL_CustomGrid_Model_Grid::ACTION_ASSIGN_PROFILES);
+        $this->_prepareFormLayout('assign', BL_CustomGrid_Model_Grid_Sentry::ACTION_ASSIGN_PROFILES);
         $this->renderLayout();
     }
     
@@ -309,5 +319,11 @@ class BL_CustomGrid_Grid_ProfileController extends BL_CustomGrid_Controller_Grid
         } else {
             $this->_setActionErrorJsonResponse($this->__('Invalid request'));
         }
+    }
+    
+    protected function _isAllowed()
+    {
+        // Specific permissions are enforced by the models
+        return true;
     }
 }

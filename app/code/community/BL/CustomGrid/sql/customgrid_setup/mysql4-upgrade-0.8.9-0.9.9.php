@@ -9,7 +9,7 @@
  *
  * @category   BL
  * @package    BL_CustomGrid
- * @copyright  Copyright (c) 2014 Benoît Leulliette <benoit.leulliette@gmail.com>
+ * @copyright  Copyright (c) 2015 Benoît Leulliette <benoit.leulliette@gmail.com>
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -220,6 +220,7 @@ $connection->addConstraint(
     'profile_id',
     $tables['grid_profile'],
     'profile_id',
+    'CASCADE',
     'CASCADE'
 );
 
@@ -318,9 +319,11 @@ $installer->run(
     KEY `FK_CUSTOM_GRID_ROLE_PROFILE_ROLE` (`role_id`),
     KEY `FK_CUSTOM_GRID_ROLE_PROFILE_PROFILE` (`profile_id`),
     CONSTRAINT `FK_CUSTOM_GRID_ROLE_PROFILE_ROLE`
-        FOREIGN KEY (`role_id`) REFERENCES `{$this->getTable('admin/role')}` (`role_id`) ON DELETE CASCADE,
+        FOREIGN KEY (`role_id`) REFERENCES `{$this->getTable('admin/role')}` (`role_id`)
+        ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT `FK_CUSTOM_GRID_ROLE_PROFILE_PROFILE`
-        FOREIGN KEY (`profile_id`) REFERENCES `{$tables['grid_profile']}` (`profile_id`) ON DELETE CASCADE
+        FOREIGN KEY (`profile_id`) REFERENCES `{$tables['grid_profile']}` (`profile_id`)
+        ON DELETE CASCADE ON UPDATE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
     "
 );

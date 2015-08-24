@@ -9,7 +9,7 @@
  *
  * @category   BL
  * @package    BL_CustomGrid
- * @copyright  Copyright (c) 2014 Benoît Leulliette <benoit.leulliette@gmail.com>
+ * @copyright  Copyright (c) 2015 Benoît Leulliette <benoit.leulliette@gmail.com>
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -45,7 +45,8 @@ $installer->run(
     PRIMARY KEY (`profile_id`),
     KEY `FK_CUSTOM_GRID_GRID_PROFILE_GRID` (`grid_id`),
     CONSTRAINT `FK_CUSTOM_GRID_GRID_PROFILE_GRID`
-        FOREIGN KEY (`grid_id`) REFERENCES `{$tables['grid']}` (`grid_id`) ON DELETE CASCADE
+        FOREIGN KEY (`grid_id`) REFERENCES `{$tables['grid']}` (`grid_id`)
+        ON DELETE CASCADE ON UPDATE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
     CREATE TABLE IF NOT EXISTS `{$tables['grid_role']}` (
@@ -60,11 +61,14 @@ $installer->run(
     KEY `FK_CUSTOM_GRID_GRID_ROLE_ROLE` (`role_id`),
     KEY `FK_CUSTOM_GRID_GRID_ROLE_DEFAULT_PROFILE` (`default_profile_id`),
     CONSTRAINT `FK_CUSTOM_GRID_GRID_ROLE_GRID`
-        FOREIGN KEY (`grid_id`) REFERENCES `{$tables['grid']}` (`grid_id`) ON DELETE CASCADE,
+        FOREIGN KEY (`grid_id`) REFERENCES `{$tables['grid']}` (`grid_id`)
+        ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT `FK_CUSTOM_GRID_GRID_ROLE_ROLE`
-        FOREIGN KEY (`role_id`) REFERENCES `{$this->getTable('admin/role')}` (`role_id`) ON DELETE CASCADE,
+        FOREIGN KEY (`role_id`) REFERENCES `{$this->getTable('admin/role')}` (`role_id`)
+        ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT `FK_CUSTOM_GRID_GRID_ROLE_DEFAULT_PROFILE`
-        FOREIGN KEY (`default_profile_id`) REFERENCES `{$tables['grid_profile']}` (`profile_id`) ON DELETE SET NULL
+        FOREIGN KEY (`default_profile_id`) REFERENCES `{$tables['grid_profile']}` (`profile_id`)
+        ON DELETE SET NULL ON UPDATE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
     CREATE TABLE IF NOT EXISTS `{$tables['grid_user']}` (
@@ -77,11 +81,14 @@ $installer->run(
     KEY `FK_CUSTOM_GRID_GRID_USER_USER` (`user_id`),
     KEY `FK_CUSTOM_GRID_GRID_USER_DEFAULT_PROFILE` (`default_profile_id`),
     CONSTRAINT `FK_CUSTOM_GRID_GRID_USER_GRID`
-        FOREIGN KEY (`grid_id`) REFERENCES `{$tables['grid']}` (`grid_id`) ON DELETE CASCADE,
+        FOREIGN KEY (`grid_id`) REFERENCES `{$tables['grid']}` (`grid_id`)
+        ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT `FK_CUSTOM_GRID_GRID_USER_USER`
-        FOREIGN KEY (`user_id`) REFERENCES `{$this->getTable('admin/user')}` (`user_id`) ON DELETE CASCADE,
+        FOREIGN KEY (`user_id`) REFERENCES `{$this->getTable('admin/user')}` (`user_id`)
+        ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT `FK_CUSTOM_GRID_GRID_USER_DEFAULT_PROFILE`
-        FOREIGN KEY (`default_profile_id`) REFERENCES `{$tables['grid_profile']}` (`profile_id`) ON DELETE SET NULL
+        FOREIGN KEY (`default_profile_id`) REFERENCES `{$tables['grid_profile']}` (`profile_id`)
+        ON DELETE SET NULL ON UPDATE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
     "
 );
@@ -124,7 +131,7 @@ $connection->addColumn(
     $tables['grid'],
     'default_filter_behaviour',
     "enum ('default', 'force_original', 'force_custom', 'merge_default', 'merge_on_original', 'merge_on_custom') "
-        . "character set utf8 default NULL"
+    . "character set utf8 default NULL"
 );
 
 /**
@@ -167,7 +174,8 @@ $connection->addConstraint(
     'profile_id',
     $tables['grid_profile'],
     'profile_id',
-    'SET NULL'
+    'SET NULL',
+    'CASCADE'
 );
 
 $connection->addColumn(

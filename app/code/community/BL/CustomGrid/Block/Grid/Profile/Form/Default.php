@@ -9,7 +9,7 @@
  *
  * @category   BL
  * @package    BL_CustomGrid
- * @copyright  Copyright (c) 2014 Benoît Leulliette <benoit.leulliette@gmail.com>
+ * @copyright  Copyright (c) 2015 Benoît Leulliette <benoit.leulliette@gmail.com>
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -20,23 +20,29 @@ class BL_CustomGrid_Block_Grid_Profile_Form_Default extends BL_CustomGrid_Block_
         return 'default';
     }
     
+    /**
+     * Add users-related fields to the given fieldset
+     * 
+     * @param Varien_Data_Form_Element_Fieldset $fieldset Fieldset
+     * @return BL_CustomGrid_Block_Grid_Profile_Form_Default
+     */
     protected function _addUsersFieldsToFieldset(Varien_Data_Form_Element_Fieldset $fieldset)
     {
         $gridModel   = $this->getGridModel();
         $profileId   = $this->getGridProfile()->getId();
         $sessionUser = $gridModel->getSessionUser();
         $permissions = array(
-            'own_user' => BL_CustomGrid_Model_Grid::ACTION_CHOOSE_OWN_USER_DEFAULT_PROFILE,
-            'other_users' => BL_CustomGrid_Model_Grid::ACTION_CHOOSE_OTHER_USERS_DEFAULT_PROFILE,
+            'own_user' => BL_CustomGrid_Model_Grid_Sentry::ACTION_CHOOSE_OWN_USER_DEFAULT_PROFILE,
+            'other_users' => BL_CustomGrid_Model_Grid_Sentry::ACTION_CHOOSE_OTHER_USERS_DEFAULT_PROFILE,
         );
         
-        if ($gridModel->checkUserPermissions($permissions['other_users'])) {
-            $usersValues = Mage::getSingleton('customgrid/system_config_source_admin_user')->toOptionArray();
+        if ($gridModel->checkUserActionPermission($permissions['other_users'])) {
+            $usersValues   = $this->_getAdminUsersOptionArray();
             $defaultValues = array();
              
             foreach ($usersValues as $key => $userValue) {
                 if ($userValue['value'] == $sessionUser->getId()) {
-                    if ($gridModel->checkUserPermissions($permissions['own_user'])) {
+                    if ($gridModel->checkUserActionPermission($permissions['own_user'])) {
                         $usersValues[$key]['label'] .= ' ' . $this->__('(me)');
                     } else {
                         unset($usersValues[$key]);
@@ -67,7 +73,7 @@ class BL_CustomGrid_Block_Grid_Profile_Form_Default extends BL_CustomGrid_Block_
                     'class'  => 'validate-select',
                 )
             );
-        } elseif ($gridModel->checkUserPermissions($permissions['own_user'])) {
+        } elseif ($gridModel->checkUserActionPermission($permissions['own_user'])) {
             $fieldset->addField(
                 'users',
                 'select',
@@ -86,23 +92,29 @@ class BL_CustomGrid_Block_Grid_Profile_Form_Default extends BL_CustomGrid_Block_
         return $this;
     }
     
+    /**
+     * Add roles-related fields to the given fieldset
+     * 
+     * @param Varien_Data_Form_Element_Fieldset $fieldset Fieldset
+     * @return BL_CustomGrid_Block_Grid_Profile_Form_Default
+     */
     protected function _addRolesFieldsToFieldset(Varien_Data_Form_Element_Fieldset $fieldset)
     {
         $gridModel   = $this->getGridModel();
         $profileId   = $this->getGridProfile()->getId();
         $sessionRole = $gridModel->getSessionRole();
         $permissions = array(
-            'own_role'   => BL_CustomGrid_Model_Grid::ACTION_CHOOSE_OWN_ROLE_DEFAULT_PROFILE,
-            'other_roles'=> BL_CustomGrid_Model_Grid::ACTION_CHOOSE_OTHER_ROLES_DEFAULT_PROFILE,
+            'own_role'   => BL_CustomGrid_Model_Grid_Sentry::ACTION_CHOOSE_OWN_ROLE_DEFAULT_PROFILE,
+            'other_roles'=> BL_CustomGrid_Model_Grid_Sentry::ACTION_CHOOSE_OTHER_ROLES_DEFAULT_PROFILE,
         );
         
-        if ($gridModel->checkUserPermissions($permissions['other_roles'])) {
-            $rolesValues   = Mage::getSingleton('customgrid/system_config_source_admin_role')->toOptionArray(false);
+        if ($gridModel->checkUserActionPermission($permissions['other_roles'])) {
+            $rolesValues   = $this->_getAdminRolesOptionArray(false);
             $defaultValues = array();
              
             foreach ($rolesValues as $key => $roleValue) {
                 if ($roleValue['value'] == $sessionRole->getId()) {
-                    if ($gridModel->checkUserPermissions($permissions['own_role'])) {
+                    if ($gridModel->checkUserActionPermission($permissions['own_role'])) {
                         $rolesValues[$key]['label'] .= ' ' . $this->__('(me)');
                     } else {
                         unset($rolesValues[$key]);
@@ -133,7 +145,7 @@ class BL_CustomGrid_Block_Grid_Profile_Form_Default extends BL_CustomGrid_Block_
                     'class'  => 'validate-select',
                 )
             );
-        } elseif ($gridModel->checkUserPermissions($permissions['own_role'])) {
+        } elseif ($gridModel->checkUserActionPermission($permissions['own_role'])) {
             $fieldset->addField(
                 'roles',
                 'select',
@@ -152,12 +164,22 @@ class BL_CustomGrid_Block_Grid_Profile_Form_Default extends BL_CustomGrid_Block_
         return $this;
     }
     
+    /**
+     * Add global fields to the given fieldset
+     * 
+     * @param Varien_Data_Form_Element_Fieldset $fieldset Fieldset
+     * @return BL_CustomGrid_Block_Grid_Profile_Form_Default
+     */
     protected function _addGlobalFieldsToFieldset(Varien_Data_Form_Element_Fieldset $fieldset)
     {
         $gridModel = $this->getGridModel();
         $profileId = $this->getGridProfile()->getId();
         
-        if ($gridModel->checkUserPermissions(BL_CustomGrid_Model_Grid::ACTION_CHOOSE_GLOBAL_DEFAULT_PROFILE)) {
+        $hasUserPermission = $gridModel->checkUserActionPermission(
+            BL_CustomGrid_Model_Grid_Sentry::ACTION_CHOOSE_GLOBAL_DEFAULT_PROFILE
+        );
+        
+        if ($hasUserPermission) {
             $fieldset->addField(
                 'global',
                 'select',
@@ -165,7 +187,7 @@ class BL_CustomGrid_Block_Grid_Profile_Form_Default extends BL_CustomGrid_Block_
                     'name'     => 'global',
                     'label'    => $this->__('Global'),
                     'required' => true,
-                    'values'   => Mage::getSingleton('customgrid/system_config_source_yesno')->toOptionArray(),
+                    'values'   => $this->_getYesNoOptionArray(),
                     'value'    => ($profileId === $gridModel->getGlobalDefaultProfileId() ? 1 : 0),
                 )
             );

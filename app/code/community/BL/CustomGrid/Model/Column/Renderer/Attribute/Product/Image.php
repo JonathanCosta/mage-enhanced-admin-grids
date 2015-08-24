@@ -9,18 +9,18 @@
  *
  * @category   BL
  * @package    BL_CustomGrid
- * @copyright  Copyright (c) 2014 Benoît Leulliette <benoit.leulliette@gmail.com>
+ * @copyright  Copyright (c) 2015 Benoît Leulliette <benoit.leulliette@gmail.com>
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
-class BL_CustomGrid_Model_Column_Renderer_Attribute_Product_Image extends
-    BL_CustomGrid_Model_Column_Renderer_Attribute_Abstract
+class BL_CustomGrid_Model_Column_Renderer_Attribute_Product_Image extends BL_CustomGrid_Model_Column_Renderer_Attribute_Abstract
 {
     public function isAppliableToAttribute(
         Mage_Eav_Model_Entity_Attribute $attribute,
         BL_CustomGrid_Model_Grid $gridModel
     ) {
-        return ($attribute->getFrontendModel() == 'catalog/product_attribute_frontend_image');
+        return ($attribute->getFrontendInput() == 'media_image')
+            || ($attribute->getFrontendModel() == 'catalog/product_attribute_frontend_image');
     }
     
     public function getColumnBlockValues(

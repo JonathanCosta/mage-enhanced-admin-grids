@@ -1,4 +1,17 @@
 <?php
+/**
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Open Software License (OSL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/osl-3.0.php
+ *
+ * @category   BL
+ * @package    BL_CustomGrid
+ * @copyright  Copyright (c) 2015 Benoît Leulliette <benoit.leulliette@gmail.com>
+ * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ */
 
 class BL_CustomGrid_Model_Custom_Column_Product_Inventory extends BL_CustomGrid_Model_Custom_Column_Simple_Table
 {
@@ -104,6 +117,7 @@ class BL_CustomGrid_Model_Custom_Column_Product_Inventory extends BL_CustomGrid_
         $mainAlias,
         $tableAlias
     ) {
+        /** @var $adapter Zend_Db_Adapter_Abstract */
         list($adapter, $qi) = $this->_getCollectionAdapter($collection, true);
         return array($adapter->quoteInto($qi($tableAlias . '.stock_id') . ' = ?', 1));
     }
@@ -142,6 +156,7 @@ class BL_CustomGrid_Model_Custom_Column_Product_Inventory extends BL_CustomGrid_
         $condition    = $columnBlock->getFilter()->getCondition();
         
         if ($fieldName && is_array($condition) && $tableAlias) {
+            /** @var $adapter Zend_Db_Adapter_Abstract */
             list($adapter, $qi) = $this->_getCollectionAdapter($collection, true);
             
             if (is_array($filterParams) && $this->_extractBoolParam($filterParams, 'use_config_filter', false)) {

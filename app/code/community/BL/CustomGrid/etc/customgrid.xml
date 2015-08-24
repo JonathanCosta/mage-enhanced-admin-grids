@@ -10,7 +10,7 @@
  *
  * @category   BL
  * @package    BL_CustomGrid
- * @copyright  Copyright (c) 2014 Benoît Leulliette <benoit.leulliette@gmail.com>
+ * @copyright  Copyright (c) 2015 Benoît Leulliette <benoit.leulliette@gmail.com>
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 -->
@@ -24,6 +24,24 @@
         <cms_block model="customgrid/grid_type_cms_block" module="customgrid">
             <name>CMS Blocks</name>
             <sort_order>20000</sort_order>
+            <custom_columns>
+                <action model="customgrid/custom_column_action" module="customgrid">
+                    <name>Action</name>
+                    <group>Misc</group>
+                    <allow_customization>0</allow_customization>
+                    <config_params>
+                        <is_use_config_field>1</is_use_config_field>
+                    </config_params>
+                    <block_params>
+                        <getter>getId</getter>
+                        <actions>
+                            <edit>
+                                <field>block_id</field>
+                            </edit>
+                        </actions>
+                    </block_params>
+                </action>
+            </custom_columns>
         </cms_block>
         
         <cms_page model="customgrid/grid_type_cms_page" module="customgrid">
@@ -52,6 +70,13 @@
                     <allow_customization>1</allow_customization> 
                     <allow_store>1</allow_store>
                 </categories>
+                
+                <frontend_link model="customgrid/custom_column_product_frontend_link" module="customgrid">
+                    <name>Frontend Link</name>
+                    <description>Displays the frontend link of each product</description>
+                    <allow_customization>1</allow_customization> 
+                    <allow_store>1</allow_store>
+                </frontend_link>
                 
                 <carts_count model="customgrid/custom_column_product_stats_quote" module="customgrid">
                     <name>Carts Number</name>
@@ -240,6 +265,29 @@
                 </stock_is_in_stock>
             </custom_columns>
         </product>
+
+        <product_attribute model="customgrid/grid_type_product_attributes" module="customgrid">
+            <name>Product Attributes</name>
+            <sort_order>65000</sort_order>
+            <custom_columns>
+                <action model="customgrid/custom_column_action" module="customgrid">
+                    <name>Action</name>
+                    <group>Misc</group>
+                    <allow_customization>0</allow_customization>
+                    <config_params>
+                        <is_use_config_field>1</is_use_config_field>
+                    </config_params>
+                    <block_params>
+                        <getter>getId</getter>
+                        <actions>
+                            <edit>
+                                <field>attribute_id</field>
+                            </edit>
+                        </actions>
+                    </block_params>
+                </action>
+            </custom_columns>
+        </product_attribute>
         
         <customer model="customgrid/grid_type_customer" module="customgrid">
             <name>Customers</name>
@@ -300,6 +348,29 @@
             <name>Reviews</name>
             <sort_order>180000</sort_order>
         </product_review>
+
+        <product_rating model="customgrid/grid_type_product_rating" module="customgrid">
+            <name>Review Ratings</name>
+            <sort_order>181000</sort_order>
+            <custom_columns>
+                <action model="customgrid/custom_column_action" module="customgrid">
+                    <name>Action</name>
+                    <group>Misc</group>
+                    <allow_customization>0</allow_customization>
+                    <config_params>
+                        <is_use_config_field>1</is_use_config_field>
+                    </config_params>
+                    <block_params>
+                        <getter>getId</getter>
+                        <actions>
+                            <edit>
+                                <field>id</field>
+                            </edit>
+                        </actions>
+                    </block_params>
+                </action>
+            </custom_columns>
+        </product_rating>
         
         <sitemap model="customgrid/grid_type_sitemap" module="customgrid">
             <name>Google Sitemap</name>
@@ -332,6 +403,15 @@
                         </excluded_versions>
                     </availability>
                 </status_color>
+                
+                <customer_email model="customgrid/custom_column_order_base" module="customgrid">
+                    <name>Email</name>
+                    <group>Customer</group>
+                    <allow_renderers>1</allow_renderers>
+                    <config_params>
+                        <order_field_name>customer_email</order_field_name>
+                    </config_params>
+                </customer_email>
                 
                 <customer_group model="customgrid/custom_column_order_customer_group" module="customgrid">
                     <name>Group</name>
@@ -373,6 +453,14 @@
                         <order_field_name>customer_email</order_field_name>
                     </config_params>
                 </customer_email>
+                
+                <weight model="customgrid/custom_column_order_base" module="customgrid">
+                    <name>Weight</name>
+                    <allow_renderers>1</allow_renderers>
+                    <config_params>
+                        <order_field_name>weight</order_field_name>
+                    </config_params>
+                </weight>
             </custom_columns>
         </sales_order>
         
@@ -390,6 +478,21 @@
             <name>Credit Memos</name>
             <sort_order>230000</sort_order>
         </sales_creditmemo>
+
+        <system_store model="customgrid/grid_type_system_store" module="customgrid">
+            <name>Manage Stores</name>
+            <sort_order>300000</sort_order>
+            <custom_columns>
+                <store_code model="customgrid/custom_column_simple_duplicate" module="customgrid">
+                    <name>Store Code</name>
+                    <description>The code for an individual store</description>
+                    <config_params>
+                        <duplicated_field_name>code</duplicated_field_name>
+                        <duplicated_field_table_alias>store_table</duplicated_field_table_alias>
+                    </config_params>
+                </store_code>
+            </custom_columns>
+        </system_store>
         
         <other model="customgrid/grid_type_other" module="customgrid">
             <name>Other</name>
@@ -1017,7 +1120,7 @@
                     <filter_mode_shortcut>
                         <label>Enable Filter Mode Shortcut</label>
                         <group>Filtering</group>
-                        <description><![CDATA[Allows to specify the filter mode directly in the filter field, by placing the corresponding code between square brackets at the beginning of the searched value.<br />Eg, use "<strong>[el]</strong>Example" to search for "Example" using "LIKE (exact)".<br />If no filter mode is indicated in the field, the value of "Filter Mode" will be used by default")]]></description>
+                        <description><![CDATA[Allows to specify the filter mode directly in the filter field, by placing the corresponding code between square brackets at the beginning of the searched value.<br />Eg, use "<strong>[el]</strong>Example" to search for "Example" using "LIKE (exact)".<br />If no filter mode is indicated in the field, the value of "Filter Mode" will be used by default]]></description>
                         <visible>1</visible>
                         <type>select</type>
                         <source_model>customgrid/system_config_source_yesno</source_model>
@@ -1614,7 +1717,7 @@
                     <filter_mode_shortcut>
                         <label>Enable Filter Mode Shortcut</label>
                         <group>Filtering</group>
-                        <description><![CDATA[Allows to specify the filter mode directly in the filter field, by placing the corresponding code between square brackets at the beginning of the searched value.<br />Eg, use "<strong>[el]</strong>Example" to search for "Example" using "LIKE (exact)".<br />If no filter mode is indicated in the field, the value of "Filter Mode" will be used by default"]]></description>
+                        <description><![CDATA[Allows to specify the filter mode directly in the filter field, by placing the corresponding code between square brackets at the beginning of the searched value.<br />Eg, use "<strong>[el]</strong>Example" to search for "Example" using "LIKE (exact)".<br />If no filter mode is indicated in the field, the value of "Filter Mode" will be used by default]]></description>
                         <visible>1</visible>
                         <type>select</type>
                         <source_model>customgrid/system_config_source_yesno</source_model>

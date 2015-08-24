@@ -9,7 +9,7 @@
  *
  * @category   BL
  * @package    BL_CustomGrid
- * @copyright  Copyright (c) 2014 Benoît Leulliette <benoit.leulliette@gmail.com>
+ * @copyright  Copyright (c) 2015 Benoît Leulliette <benoit.leulliette@gmail.com>
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -30,6 +30,11 @@ class BL_CustomGrid_Block_Grid_Form_Export extends BL_CustomGrid_Block_Grid_Form
         return false;
     }
     
+    /**
+     * Return available export types
+     * 
+     * @return BL_CustomGrid_Object[]
+     */
     protected function _getExportTypes()
     {
         return $this->getGridModel()
@@ -37,6 +42,11 @@ class BL_CustomGrid_Block_Grid_Form_Export extends BL_CustomGrid_Block_Grid_Form
             ->getExportTypes();
     }
     
+    /**
+     * Return available export types as an option hash (url => label)
+     * 
+     * @return array
+     */
     protected function _getExportTypesHash()
     {
         $exportTypes = array();
@@ -48,11 +58,16 @@ class BL_CustomGrid_Block_Grid_Form_Export extends BL_CustomGrid_Block_Grid_Form
         return $exportTypes;
     }
     
+    /**
+     * Return available export sizes as an option hash
+     * 
+     * @return array
+     */
     protected function _getExportSizesHash()
     {
         $exportSizes = array();
         
-        if ($totalSize = $this->getTotalSize()) {
+        if ($totalSize = $this->_getData('total_size')) {
             $exportSizes[$totalSize] = $this->__('Total (%s)', $totalSize);
         }
         
@@ -127,6 +142,19 @@ class BL_CustomGrid_Block_Grid_Form_Export extends BL_CustomGrid_Block_Grid_Form
                 'value'    => (int) $this->getDataSetDefault('first_index', 1),
             )
         );
+        
+        if (is_array($additionalParams = $this->_getData('additional_params'))) {
+            foreach ($additionalParams as $key => $value) {
+                $fieldset->addField(
+                    $key,
+                    'hidden',
+                    array(
+                        'name'  => $form->addSuffixToName($key, 'additional_params'),
+                        'value' => $value,
+                    )
+                );
+            }
+        }
         
         $this->getDependenceBlock()
             ->addFieldMap($sizeField->getHtmlId(), 'size')

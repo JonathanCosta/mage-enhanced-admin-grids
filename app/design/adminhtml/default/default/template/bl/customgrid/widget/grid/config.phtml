@@ -9,7 +9,7 @@
  *
  * @category   BL
  * @package    BL_CustomGrid
- * @copyright  Copyright (c) 2014 Benoît Leulliette <benoit.leulliette@gmail.com>
+ * @copyright  Copyright (c) 2015 Benoît Leulliette <benoit.leulliette@gmail.com>
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 ?>
@@ -17,7 +17,13 @@
 <?php $_gridModel = $this->getGridModel() ?>
     <div id="<?php echo $this->getHtmlId() ?>-profiles-bar" class="blcg-grid-profiles-bar">
         <div class="blcg-grid-profiles-list-wrapper">
-            <ul class="blcg-grid-profiles-list"></ul>
+            <div class="blcg-grid-profiles-list-constrainer">
+                <div class="blcg-grid-profiles-list-sub-wrapper">
+                    <button type="button" title="<?php echo $this->__('Previous') ?>" class="blcg-grid-profiles-bar-button blcg-grid-profiles-bar-button-previous blcg-no-display"><span><span><?php echo $this->__('Previous') ?></span></span></button>
+                    <button type="button" title="<?php echo $this->__('Next') ?>" class="blcg-grid-profiles-bar-button blcg-grid-profiles-bar-button-next blcg-no-display"><span><span><?php echo $this->__('Next') ?></span></span></button>
+                    <ul class="blcg-grid-profiles-list"></ul>
+                </div>
+            </div>
         </div>
         <div class="blcg-grid-profiles-bar-cell">
             <div class="blcg-grid-profiles-list-options blcg-grid-profiles-bar-buttons"></div>

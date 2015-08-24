@@ -9,7 +9,7 @@
  *
  * @category   BL
  * @package    BL_CustomGrid
- * @copyright  Copyright (c) 2014 Benoît Leulliette <benoit.leulliette@gmail.com>
+ * @copyright  Copyright (c) 2015 Benoît Leulliette <benoit.leulliette@gmail.com>
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -45,7 +45,8 @@ $connection->addConstraint(
     'base_profile_id',
     $tables['grid_profile'],
     'profile_id',
-    'RESTRICT'
+    'RESTRICT',
+    'CASCADE'
 );
 
 $connection->addColumn(
@@ -60,7 +61,8 @@ $connection->addConstraint(
     'global_default_profile_id',
     $tables['grid_profile'],
     'profile_id',
-    'SET NULL'
+    'SET NULL',
+    'CASCADE'
 );
 
 /**

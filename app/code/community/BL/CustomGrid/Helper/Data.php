@@ -9,7 +9,7 @@
  *
  * @category   BL
  * @package    BL_CustomGrid
- * @copyright  Copyright (c) 2014 Benoît Leulliette <benoit.leulliette@gmail.com>
+ * @copyright  Copyright (c) 2015 Benoît Leulliette <benoit.leulliette@gmail.com>
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -335,5 +335,29 @@ class BL_CustomGrid_Helper_Data extends Mage_Core_Helper_Abstract
         }
         
         return $result;
+    }
+    
+    /**
+     * Return the default non-admin store ID
+     * 
+     * @return int
+     */
+    public function getDefaultNonAdminStoreId()
+    {
+        $stores = Mage::app()->getStores(false);
+        $store  = array_shift($stores);
+        return $store->getId();
+    }
+    
+    /**
+     * Unregister the resource singleton corresponding to the given class code
+     * 
+     * @param string $classCode Class code of the singletonized resource model
+     * @return BL_CustomGrid_Helper_Data
+     */
+    public function unregisterResourceSingleton($classCode)
+    {
+        Mage::unregister('_resource_singleton/' . $classCode);
+        return $this;
     }
 }

@@ -14,7 +14,7 @@ _Backwards compatibility is assured for all the previously existing data. **If y
 
 ### Main changes / New features :
 - massive code refactoring (goals: better maintainability, more consistency, better practices and a smaller footprint)
-- big design and usability rework (thanks to [paales](https://github.com/paales) for the current design)
+- big design and usability rework
 - every in-grid customization is now saved via Ajax, for a seamless integration in Ajax-based grids
 - profiles system (different columns lists and default parameters for each grid, assignable to different roles)
 - forcable grid types (use advanced features for the grids that you know to be compatible with a given grid type, but by default are not associated to it)
@@ -24,16 +24,31 @@ _Backwards compatibility is assured for all the previously existing data. **If y
 - refined permissions
 - various bug fixes
 
-### Final steps before beta release
-- last waves of code refactoring/cleanup and complexity reduction
-- rework the "Access All" profiles permission (make all the profiles be available from everywhere, except in the bar)
-- rework the sales items columns (implement the advanced text filter, improve their extensibility, and allow to display a customizable value when exported)
+Special thanks to : [paales](https://github.com/paales) for the current design and [mwgamble](https://github.com/mwgamble) for his many contributions
 
-### Continuous changes (primary todo list) :
+### Final steps before beta release
+- [ ] write a FAQ page with the most common issues and questions
+- [ ] last waves of code refactoring/cleanup and complexity reduction (focus on [Scrutinizer hot spots](https://scrutinizer-ci.com/g/mage-eag/mage-enhanced-admin-grids/code-structure/1.0.0-wip/hot-spots))
+- [ ] **editor system refactoring** :
+    - [ ] separate responsibilities into different models, introduce callbacks
+    - [ ] implement custom columns editability
+    - [ ] make the inventory columns from the products grids be editable
+    - [ ] create a spreadsheet summarizing the compatibility of each editor across the different Magento versions (use three different states : "untested", "tested and functional", "tested with problems" - provide links to the related issues -)
+    - [ ] start filling up the compatibility spreadsheet
+- [ ] **JS code refactoring** :
+    - [ ] remove `CDATA` sections
+    - [ ] refactor and optimize code when possible
+    - [ ] review the code style (follow some best practices)
+    - [ ] write comments (use [JSDoc](http://usejsdoc.org/index.html))
+    - [ ] implement an object manager, to remove as much clutter as possible from the global scope, and automatically cleanup unneeded/overridable objects (especially for Ajax grids)
+- [ ] rework the "Access All" profiles permission (make all the profiles be available from everywhere, except in the bar)
+- [ ] rework the sales items columns (implement the advanced text filter, improve their extensibility, and allow to display a customizable value when exported)
+
+### Continuous changes (primary todo list)
 - new custom columns for different grids (especially the sales grids)
 - better compatibility with certain grids
 - various small improvements
 
-### Other considered changes (secondary todo list) :
-- callbacks system for the editors, then editable custom columns
+### Other considered changes (secondary todo list)
 - profiles groups ?
+- start writing some tests (better late than never)

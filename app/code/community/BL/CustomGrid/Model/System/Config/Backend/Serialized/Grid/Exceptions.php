@@ -9,12 +9,11 @@
  *
  * @category   BL
  * @package    BL_CustomGrid
- * @copyright  Copyright (c) 2014 Benoît Leulliette <benoit.leulliette@gmail.com>
+ * @copyright  Copyright (c) 2015 Benoît Leulliette <benoit.leulliette@gmail.com>
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
-class BL_CustomGrid_Model_System_Config_Backend_Serialized_Grid_Exceptions extends
-    Mage_Adminhtml_Model_System_Config_Backend_Serialized
+class BL_CustomGrid_Model_System_Config_Backend_Serialized_Grid_Exceptions extends Mage_Adminhtml_Model_System_Config_Backend_Serialized
 {
     protected function _beforeSave()
     {

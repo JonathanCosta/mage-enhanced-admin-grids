@@ -9,12 +9,11 @@
  *
  * @category   BL
  * @package    BL_CustomGrid
- * @copyright  Copyright (c) 2014 Benoît Leulliette <benoit.leulliette@gmail.com>
+ * @copyright  Copyright (c) 2015 Benoît Leulliette <benoit.leulliette@gmail.com>
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
-class BL_CustomGrid_Block_Widget_Grid_Editor_Renderer_Attribute_Default extends
-    BL_CustomGrid_Block_Widget_Grid_Editor_Renderer_Abstract
+class BL_CustomGrid_Block_Widget_Grid_Editor_Renderer_Attribute_Default extends BL_CustomGrid_Block_Widget_Grid_Editor_Renderer_Abstract
 {
     protected function _getRenderedValue()
     {
@@ -22,7 +21,7 @@ class BL_CustomGrid_Block_Widget_Grid_Editor_Renderer_Attribute_Default extends
         $attribute = $this->getEditedAttribute();
         $entityValue = $entity->getData($attribute->getAttributeCode());
         $renderableValue = $this->getRenderableValue();
-        $renderedValue = '';
+        $renderedValue   = '';
         
         if ($attribute->getFrontendModel() == Mage_Eav_Model_Entity::DEFAULT_FRONTEND_MODEL) {
             if (((string) $renderableValue) != '') {

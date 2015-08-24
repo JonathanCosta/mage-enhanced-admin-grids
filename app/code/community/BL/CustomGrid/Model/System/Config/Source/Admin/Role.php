@@ -9,7 +9,7 @@
  *
  * @category   BL
  * @package    BL_CustomGrid
- * @copyright  Copyright (c) 2014 Benoît Leulliette <benoit.leulliette@gmail.com>
+ * @copyright  Copyright (c) 2015 Benoît Leulliette <benoit.leulliette@gmail.com>
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -17,31 +17,44 @@ class BL_CustomGrid_Model_System_Config_Source_Admin_Role
 {
     const CREATOR_ROLE = 'blcg_creator_role';
     
-    static protected $_optionArray = null;
+    /**
+     * Options cache
+     * 
+     * @var array|null
+     */
+    protected $_optionArray = null;
     
-    public function toOptionArray($includeCreatorRole=true)
+    /**
+     * @param bool $includeCreatorRole Whether the "Creator Role" option should be included
+     * @return array
+     */
+    public function toOptionArray($includeCreatorRole = true)
     {
-        if (is_null(self::$_optionArray)) {
-            $collection = Mage::getModel('admin/role')
-                ->getCollection()
-                ->setRolesFilter();
+        if (is_null($this->_optionArray)) {
+            /** @var $collection Mage_Admin_Model_Mysql4_Role_Collection */
+            $collection = Mage::getModel('admin/role')->getCollection();
+            $collection->setRolesFilter();
             
             foreach ($collection as $role) {
-                self::$_optionArray[] = array(
+                /** @var $role Mage_Admin_Model_Role */
+                $this->_optionArray[] = array(
                     'value' => $role->getRoleId(),
                     'label' => $role->getRoleName(),
                 );
             }
         }
         
-        $options = self::$_optionArray;
+        $options = $this->_optionArray;
         
         if ($includeCreatorRole) {
+            /** @var $helper BL_CustomGrid_Helper_Data */
+            $helper = Mage::helper('customgrid');
+            
             array_unshift(
                 $options,
                 array(
                     'value' => self::CREATOR_ROLE,
-                    'label' => Mage::helper('customgrid')->__('Creator Role'),
+                    'label' => $helper->__('Creator Role'),
                 )
             );
         }

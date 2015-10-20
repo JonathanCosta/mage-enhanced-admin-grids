@@ -224,7 +224,7 @@ abstract class BL_CustomGrid_Model_Config_Abstract extends Varien_Object
     public function decodeParameters($parameters, $forceArray=false)
     {
         if (is_string($parameters)) {
-            $parameters = unserialize($parameters);
+            $parameters = @unserialize($parameters);
         }
         return ($forceArray && !is_array($parameters) ? array() : $parameters);
     }

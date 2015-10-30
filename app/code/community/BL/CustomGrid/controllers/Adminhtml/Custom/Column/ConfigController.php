@@ -13,31 +13,33 @@
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
-class BL_CustomGrid_Column_Renderer_CollectionController
+class BL_CustomGrid_Adminhtml_Custom_Column_ConfigController
     extends Mage_Adminhtml_Controller_Action
 {
-    protected function _initRenderer()
+    protected function _initCustomColumn()
     {
-        if ($code = $this->getRequest()->getParam('code')) {
-            $renderer = Mage::getSingleton('customgrid/column_renderer_collection')->getConfigAsObject($code);
-            if ($renderer->isEmpty()) {
-                $renderer = null;
-            }
+        $config = Mage::getSingleton('customgrid/grid_type');
+        
+        if (($code = $this->getRequest()->getParam('code'))
+            && (count($code = explode('/', $code)) == 2)
+            && ($gridType = $config->getTypeInstanceByCode($code[0]))
+            && ($customColumn = $gridType->getCustomColumn($code[1]))) {
+            Mage::register('current_custom_column', $customColumn);
         } else {
-            $renderer = null;
+            $customColumn = null;
         }
-        Mage::register('current_collection_column_renderer', $renderer);
-        return $renderer;
+        
+        return $customColumn;
     }
     
     public function indexAction()
     {
-        if ($renderer = $this->_initRenderer()) {
+        if ($column = $this->_initCustomColumn()) {
             $this->loadLayout('empty');
             
             if (($params = $this->getRequest()->getParam('params'))
-                && ($block = $this->getLayout()->getBlock('column_renderer_collection'))) {
-                $params = Mage::getSingleton('customgrid/column_renderer_collection')->decodeParameters($params);
+                && ($block = $this->getLayout()->getBlock('custom_column_config'))) {
+                $params = Mage::getSingleton('customgrid/grid_type')->decodeParameters($params);
                 $block->setConfigParams($params);
             }
             
@@ -46,7 +48,7 @@ class BL_CustomGrid_Column_Renderer_CollectionController
             $this->loadLayout(array(
                 'empty', 
                 strtolower($this->getFullActionName()),
-                'customgrid_column_renderer_collection_unknown',
+                'customgrid_custom_column_config_unknown',
             ))->renderLayout();
         }
     }
@@ -54,7 +56,7 @@ class BL_CustomGrid_Column_Renderer_CollectionController
     public function buildConfigAction()
     {
         $params  = $this->getRequest()->getPost('parameters', array());
-        $encoded = Mage::getSingleton('customgrid/column_renderer_collection')->encodeParameters($params);
+        $encoded = Mage::getSingleton('customgrid/grid_type')->encodeParameters($params);
         $this->getResponse()->setBody($encoded);
     }
 }

@@ -9,11 +9,11 @@
  *
  * @category   BL
  * @package    BL_CustomGrid
- * @copyright  Copyright (c) 2015 Benoît Leulliette <benoit.leulliette@gmail.com>
+ * @copyright  Copyright (c) 2016 Benoît Leulliette <benoit.leulliette@gmail.com>
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
-class BL_CustomGrid_Grid_Editor_ProductController extends Mage_Adminhtml_Controller_Action
+class BL_CustomGrid_Blcg_Grid_Editor_ProductController extends BL_CustomGrid_Controller_Grid_Action
 {
     public function wysiwygAction()
     {

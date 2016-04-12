@@ -9,11 +9,11 @@
  *
  * @category   BL
  * @package    BL_CustomGrid
- * @copyright  Copyright (c) 2015 Benoît Leulliette <benoit.leulliette@gmail.com>
+ * @copyright  Copyright (c) 2016 Benoît Leulliette <benoit.leulliette@gmail.com>
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
-class BL_CustomGrid_Grid_ProfileController extends BL_CustomGrid_Controller_Grid_Action
+class BL_CustomGrid_Blcg_Grid_ProfileController extends BL_CustomGrid_Controller_Grid_Action
 {
     protected function _setActionSuccessJsonResponse(array $actions = array())
     {
@@ -44,10 +44,10 @@ class BL_CustomGrid_Grid_ProfileController extends BL_CustomGrid_Controller_Grid
                 }
             }
             
-            $handles[] = 'customgrid_grid_profile_form_window_action'; 
+            $handles[] = 'adminhtml_blcg_grid_profile_form_window_action'; 
             
         } catch (Mage_Core_Exception $e) {
-            $handles[] = 'customgrid_grid_profile_form_window_error';
+            $handles[] = 'adminhtml_blcg_grid_profile_form_window_error';
             $error = $e->getMessage();
         }
         

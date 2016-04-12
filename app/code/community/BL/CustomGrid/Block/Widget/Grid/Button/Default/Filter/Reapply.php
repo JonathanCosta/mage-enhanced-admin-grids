@@ -9,7 +9,7 @@
  *
  * @category   BL
  * @package    BL_CustomGrid
- * @copyright  Copyright (c) 2015 Benoît Leulliette <benoit.leulliette@gmail.com>
+ * @copyright  Copyright (c) 2016 Benoît Leulliette <benoit.leulliette@gmail.com>
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -50,7 +50,7 @@ class BL_CustomGrid_Block_Widget_Grid_Button_Default_Filter_Reapply extends Mage
     public function getReapplyDefaultFilterUrl()
     {
         return $this->getUrl(
-            'customgrid/grid/reapplyDefaultFilter',
+            'adminhtml/blcg_grid/reapplyDefaultFilter',
             array(
                 'grid_id' => $this->getGridModel()->getId(),
                 'profile_id' => $this->getGridModel()->getProfileId(),

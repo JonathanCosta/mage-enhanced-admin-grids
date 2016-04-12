@@ -34,7 +34,7 @@
  *
  * @category   BL
  * @package    BL_CustomGrid
- * @copyright  Copyright (c) 2015 Benoît Leulliette <benoit.leulliette@gmail.com>
+ * @copyright  Copyright (c) 2016 Benoît Leulliette <benoit.leulliette@gmail.com>
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -268,7 +268,7 @@ class BL_CustomGrid_Block_Widget_Grid_Column_Filter_Product_Categories_Chooser e
      */
     public function getLoadTreeUrl($expanded = null)
     {
-        return $this->getUrl('customgrid/grid_column_filter/categoriesJson', array('_current' => true));
+        return $this->getUrl('adminhtml/blcg_grid_column_filter/categoriesJson', array('_current' => true));
     }
     
     /**

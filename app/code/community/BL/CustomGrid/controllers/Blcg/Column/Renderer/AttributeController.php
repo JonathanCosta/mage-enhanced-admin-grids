@@ -9,11 +9,11 @@
  *
  * @category   BL
  * @package    BL_CustomGrid
- * @copyright  Copyright (c) 2015 Benoît Leulliette <benoit.leulliette@gmail.com>
+ * @copyright  Copyright (c) 2016 Benoît Leulliette <benoit.leulliette@gmail.com>
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
-class BL_CustomGrid_Column_Renderer_AttributeController extends BL_CustomGrid_Controller_Grid_Action
+class BL_CustomGrid_Blcg_Column_Renderer_AttributeController extends BL_CustomGrid_Controller_Grid_Action
 {
     /**
      * Return the config model for attribute column renderers
@@ -62,7 +62,7 @@ class BL_CustomGrid_Column_Renderer_AttributeController extends BL_CustomGrid_Co
                 array(
                     'blcg_empty', 
                     strtolower($this->getFullActionName()),
-                    'customgrid_column_renderer_attribute_unknown',
+                    'adminhtml_blcg_column_renderer_attribute_unknown',
                 )
             );
             $this->renderLayout();

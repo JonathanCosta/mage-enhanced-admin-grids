@@ -9,7 +9,7 @@
  *
  * @category   BL
  * @package    BL_CustomGrid
- * @copyright  Copyright (c) 2015 Benoît Leulliette <benoit.leulliette@gmail.com>
+ * @copyright  Copyright (c) 2016 Benoît Leulliette <benoit.leulliette@gmail.com>
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -22,6 +22,7 @@
  * @method this setAllowStore(bool $flag) Set whether this column allows to choose a base store view
  * @method BL_CustomGrid_Model_Custom_Column_Abstract setCurrentBlockValues(array $currentBlockValues)
  */
+
 abstract class BL_CustomGrid_Model_Custom_Column_Abstract extends BL_CustomGrid_Object
 {
     /**

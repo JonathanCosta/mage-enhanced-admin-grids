@@ -23,6 +23,7 @@ class BL_CustomGrid_Model_Custom_Column_Order_Items_Custom extends BL_CustomGrid
     protected function _getItemBaseValues()
     {
         return array(
+            'image'           => 'Image',
             'name'            => 'Name',
             'sku'             => 'SKU',
             'original_price'  => 'Original Price',

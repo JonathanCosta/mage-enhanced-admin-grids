@@ -34,7 +34,6 @@
  * @method string|null getVarNameSort() Return the variable name used by the grid block for the sort parameter
  * @method string|null getVarNameDir() Return the variable name used by the grid block for the direction parameter
  * @method string|null getVarNameFilter() Return the variable name used by the grid block for the filter parameter
- * @method string|null getVarNamePage() Return the variable name used by the grid block for the page parameter
  * @method int getHasVaryingBlockId() Return whether the corresponding grid block has a varying ID
  */
 

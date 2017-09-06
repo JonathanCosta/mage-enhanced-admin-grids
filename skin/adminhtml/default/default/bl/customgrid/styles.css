@@ -260,7 +260,7 @@ div.blcg-collapseable a.open { background:url(images/collapse_arrow_up.png) 100%
 .blcg-custom-grid-config { margin:0 0 6px; }
 .blcg-custom-grid-config .massaction { border-top:0; }
 .blcg-custom-grid-config .grid table tr:hover,
-.blcg-custom-grid-config .grid table tr.blcg-dnd-whileDrag { background-color:#fcf5dd; } 
+.blcg-custom-grid-config .grid table tr.blcg-dnd-whileDrag { background-color:#fcf5dd; }
 .blcg-custom-grid-config .grid table td { vertical-align:middle; }
 
 .blcg-custom-grid-config .grid table .blcg-drag-handle {
@@ -330,7 +330,7 @@ div.blcg-collapseable a.open { background:url(images/collapse_arrow_up.png) 100%
     background-repeat:no-repeat;
     background-position:center center;
     cursor:pointer;
-    
+
 }
 .blcg-column-editor-overlay-edit { background-image:url(images/edit.png); }
 .blcg-column-editor-overlay-validate { background-image:url(images/validate.gif); }
@@ -457,7 +457,7 @@ div.blcg-collapseable a.open { background:url(images/collapse_arrow_up.png) 100%
 }
 
 .dialog.blcg-maximized-popup-window .blcg_content { overflow:hidden !important; }
-.dialog.blcg-maximized-popup-window .blcg_content iframe { width:100% !important; height:100% !important; }
+.dialog.blcg-maximized-popup-window .blcg_content iframe { position:absolute; width:99% !important; height:100% !important; }
 .adminhtml-blcg-grid-columnslistform { background:#fff; }
 
 /* SPECIFIC STYLES */

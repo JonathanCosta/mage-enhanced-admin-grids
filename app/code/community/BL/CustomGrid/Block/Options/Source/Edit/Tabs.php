@@ -9,56 +9,55 @@
  *
  * @category   BL
  * @package    BL_CustomGrid
- * @copyright  Copyright (c) 2011 Benoît Leulliette <benoit.leulliette@gmail.com>
+ * @copyright  Copyright (c) 2015 Benoît Leulliette <benoit.leulliette@gmail.com>
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
-class BL_CustomGrid_Block_Options_Source_Edit_Tabs
-    extends Mage_Adminhtml_Block_Widget_Tabs
+class BL_CustomGrid_Block_Options_Source_Edit_Tabs extends Mage_Adminhtml_Block_Widget_Tabs
 {
     public function __construct()
     {
         parent::__construct();
-        $this->setId('options_source_info_tabs');
-        $this->setDestElementId('options_source_edit_form');
+        $this->setId('blcg_options_source_edit_tabs');
+        $this->setDestElementId('edit_form');
         $this->setTitle($this->__('Options Source'));
-    }
-    
-    public function getOptionsSourceType()
-    {
-        if (!($type = $this->getOptionsSource()->getType()) && $this->getRequest()) {
-            $type = $this->getRequest()->getParam('type', null);
-        }
-        return $type;
     }
     
     protected function _prepareLayout()
     {
-        $source = $this->getOptionsSource();
-        $type   = $this->getOptionsSourceType();
-        
-        if ($type) {
-            $this->addTab('general', array(
-                'label'   => $this->__('General'),
-                'content' => $this->getLayout()->createBlock('customgrid/options_source_edit_tab_general')->toHtml(),
-                'active'  => true,
-            ));
+        if ($type = $this->getOptionsSourceType()) {
+            $this->addTab('general', 'customgrid/options_source_edit_tab_general');
+            
+            if ($type == BL_CustomGrid_Model_Options_Source::TYPE_MAGE_MODEL) {
+                $this->addTab('mage_model', 'customgrid/options_source_edit_tab_model');
+            } elseif ($type == BL_CustomGrid_Model_Options_Source::TYPE_CUSTOM_LIST) {
+                $this->addTab('custom_list', 'customgrid/options_source_edit_tab_custom');
+            }
         } else {
-            $this->addTab('type', array(
-                'label'   => $this->__('Settings'),
-                'content' => $this->getLayout()->createBlock('customgrid/options_source_edit_tab_settings')->toHtml(),
-                'active'  => true,
-            ));
+            $this->addTab('type', 'customgrid/options_source_edit_tab_settings');
         }
-        
         return parent::_prepareLayout();
     }
     
+    /**
+     * Return the edited options source
+     * 
+     * @return BL_CustomGrid_Model_Options_Source
+     */
     public function getOptionsSource()
     {
-        if (!($this->getData('options_source') instanceof BL_CustomGrid_Model_Options_Source)) {
-            $this->setData('options_source', Mage::registry('options_source'));
-        }
-        return $this->getData('options_source');
+        return Mage::registry('blcg_options_source');
+    }
+    
+    /**
+     * Return the type of the edited options source
+     * 
+     * @return string
+     */
+    public function getOptionsSourceType()
+    {
+        return (!$type = $this->getOptionsSource()->getType())
+            ? $this->getRequest()->getParam('type', null)
+            : $type;
     }
 }

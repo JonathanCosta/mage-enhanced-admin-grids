@@ -9,48 +9,53 @@
  *
  * @category   BL
  * @package    BL_CustomGrid
- * @copyright  Copyright (c) 2011 Benoît Leulliette <benoit.leulliette@gmail.com>
+ * @copyright  Copyright (c) 2015 Benoît Leulliette <benoit.leulliette@gmail.com>
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
-class BL_CustomGrid_Block_Widget_Grid_Editor_Renderer_Attribute_Default
-    extends BL_CustomGrid_Block_Widget_Grid_Editor_Renderer_Abstract
+class BL_CustomGrid_Block_Widget_Grid_Editor_Renderer_Attribute_Default extends BL_CustomGrid_Block_Widget_Grid_Editor_Renderer_Abstract
 {
-    protected function _getRenderedValue()
+    protected function _getRenderedValue($renderableValue)
     {
-        $entity          = $this->getEditedEntity();
-        $attribute       = $this->getEditedAttribute();
-        $entityValue     = $entity->getData($attribute->getAttributeCode());
-        $renderableValue = $this->getRenderableValue();
+        $editedEntity    = $this->getEditedEntity();
+        $editedAttribute = $this->getEditedAttribute();
+        $entityValue     = $editedEntity->getData($editedAttribute->getAttributeCode());
         $renderedValue   = '';
         
-        if ($attribute->getFrontendModel() == Mage_Eav_Model_Entity::DEFAULT_FRONTEND_MODEL) {
-            if ((string)$renderableValue != '') {
-                if ($attribute->getFrontendInput() == 'textarea') {
+        if ($editedAttribute->getFrontendModel() == Mage_Eav_Model_Entity::DEFAULT_FRONTEND_MODEL) {
+            if (((string) $renderableValue) != '') {
+                if ($editedAttribute->getFrontendInput() == 'textarea') {
                     // Values from textarea may be too long, so return default value as a default behaviour
-                    $renderedValue = $this->_defaultValue;
-                } elseif ($attribute->getFrontendInput() == 'price') {
-                    // Convert prices for display (else simple decimal)
+                    $renderedValue = $this->getDefaultValue();
+                    
+                } elseif ($editedAttribute->getFrontendInput() == 'price') {
+                    // Convert prices for display (else they would be displayed as raw decimal)
                     if (is_string($renderableValue)) {
-                        $renderedValue = Mage::app()->getStore($entity->getStoreId())->convertPrice($renderableValue, true, false);
+                        $renderedValue = Mage::app()
+                            ->getStore($editedEntity->getStoreId())
+                            ->convertPrice($renderableValue, true, false);
                     } else {
-                        $renderedValue = $this->_defaultValue;
+                        $renderedValue = $this->getDefaultValue();
                     }
-                } elseif ($attribute->getFrontendInput() == 'date') {
-                    // Convert dates for display (else internal format)
-                    $date   = new Zend_Date($renderableValue, Varien_Date::DATETIME_INTERNAL_FORMAT);
+                    
+                } elseif ($editedAttribute->getFrontendInput() == 'date') {
+                    // Convert dates for display (else they would be displayed in internal format)
+                    $date = new Zend_Date($renderableValue, Varien_Date::DATETIME_INTERNAL_FORMAT);
                     $format = Mage::app()->getLocale()->getDateFormat(Mage_Core_Model_Locale::FORMAT_TYPE_SHORT);
                     $renderedValue = $date->toString($format);
-                } elseif (in_array($attribute->getFrontendInput(), array('boolean', 'select'))
-                          && !$attribute->getFrontend()->getOption($entityValue)) {
+                    
+                } elseif (in_array($editedAttribute->getFrontendInput(), array('boolean', 'select'))
+                    && !$editedAttribute->getFrontend()->getOption($entityValue)) {
                     // Default frontend model uses boolean values when no option, so counter this
                     $renderedValue = '';
+                    
                 } else {
-                    $renderedValue = htmlspecialchars($renderableValue);
+                    // Use escaped raw value for everything else
+                    $renderedValue = $this->htmlEscape($renderableValue);
                 }
             }
         } else {
-            // if this is a specific one, trust frontend model for rendering
+            // If the frontend model is a specific one, trust it for the rendering
             $renderedValue = $renderableValue;
         }
         

@@ -9,12 +9,11 @@
  *
  * @category   BL
  * @package    BL_CustomGrid
- * @copyright  Copyright (c) 2011 Benoît Leulliette <benoit.leulliette@gmail.com>
+ * @copyright  Copyright (c) 2015 Benoît Leulliette <benoit.leulliette@gmail.com>
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
-class BL_CustomGrid_Model_Mysql4_Options_Source
-    extends Mage_Core_Model_Mysql4_Abstract
+class BL_CustomGrid_Model_Mysql4_Options_Source extends Mage_Core_Model_Mysql4_Abstract
 {
     protected function _construct()
     {
@@ -26,22 +25,20 @@ class BL_CustomGrid_Model_Mysql4_Options_Source
         if ($object->getId()) {
             $read = $this->_getReadAdapter();
             
-            if ($object->getType() == BL_CustomGrid_Model_Options_Source::SOURCE_TYPE_MAGE_MODEL) {
-                // Load corresponding model
-                $query = $read->select()
+            if ($object->getType() == BL_CustomGrid_Model_Options_Source::TYPE_MAGE_MODEL) {
+                $select = $read->select()
                     ->from($this->getTable('customgrid/options_source_model'))
                     ->where('source_id = ?', $object->getId());
                 
-                if ($model = $read->fetchRow($query)) {
-                    $object->addData($model);
+                if (is_array($data = $read->fetchRow($select))) {
+                    $object->addData($data);
                 }
             } else {
-                // Load corresponding options
-                $query = $read->select()
+                $select = $read->select()
                     ->from($this->getTable('customgrid/options_source_option'))
                     ->where('source_id = ?', $object->getId());
                 
-                $options = $read->fetchAll($query);
+                $options = $read->fetchAll($select);
                 $object->setData('options', is_array($options) ? $options : array());
             }
         }
@@ -50,100 +47,118 @@ class BL_CustomGrid_Model_Mysql4_Options_Source
     
     protected function _afterSave(Mage_Core_Model_Abstract $object)
     {
+        if ($object->getType() == BL_CustomGrid_Model_Options_Source::TYPE_CUSTOM_LIST) {
+            $this->_saveCustomListOptions($object);
+        } elseif ($object->getType() == BL_CustomGrid_Model_Options_Source::TYPE_MAGE_MODEL) {
+            $this->_saveMageModelConfig($object);
+        }
+        return parent::_afterSave($object);
+    }
+    
+    /**
+     * Save the options values from the custom list of the given source
+     * 
+     * @param Mage_Core_Model_Abstract $object Options source
+     * @return BL_CustomGrid_Model_Mysql4_Options_Source
+     */
+    protected function _saveCustomListOptions(Mage_Core_Model_Abstract $object)
+    {
         $read  = $this->_getReadAdapter();
         $write = $this->_getWriteAdapter();
+        $table = $this->getTable('customgrid/options_source_option');
+        $options = $object->getOptions();
         
-        if ($object->getType() == BL_CustomGrid_Model_Options_Source::SOURCE_TYPE_MAGE_MODEL) {
-            // Save corresponding model
-            $table = $this->getTable('customgrid/options_source_model');
+        if (is_array($options)) {
+            $select = $read->select()
+                ->from($table, 'option_id')
+                ->where('source_id = ?', $object->getId());
             
-            // Delete source model(s)
-            $delete = array($write->quoteInto('source_id = ?', $object->getId()));
-            if ($object->getModelId()) {
-                // But keep updated model if set
-                $delete[] = $write->quoteInto('model_id != ?', $object->getModelId());
-            }
-            $write->delete($table, $delete);
+            $existingIds = $read->fetchCol($select);
+            $foundIds = array();
             
-            // Insert or update model
-            $values = array(
-                'source_id'   => $object->getId(),
-                'model_name'  => $object->getModelName(),
-                'model_type'  => $object->getModelType(),
-                'method'      => $object->getMethod(),
-                'return_type' => $object->getReturnType(),
-                'value_key'   => $object->getValueKey(),
-                'label_key'   => $object->getLabelKey(),
-            );
-            $updated = false;
-            
-            if ($object->getModelId()) {
-                $query = $read->select()
-                    ->from($table)
-                    ->where('source_id = '.$object->getId().' AND model_id = ?', $object->getModelId());
+            foreach ($options as $option) {
+                $values  = array(
+                    'source_id' => $object->getId(),
+                    'value'     => $option['value'],
+                    'label'     => $option['label'],
+                );
                 
-                if ($read->fetchOne($query)) {
-                    // Update model if given ID correspond to a model that actually belong to saved source
-                    $write->update(
-                        $table,
-                        $values,
-                        $write->quoteInto('model_id = ?', $object->getModelId())
-                    );
-                    $updated = true;
-                }
-            }
-            
-            if (!$updated) {
-                // Else (no ID or not found for source), insert it
-                $write->insert($table, $values);
-            }
-        } else {
-            // Save corresponding options
-            $table   = $this->getTable('customgrid/options_source_option');
-            $options = $object->getOptions();
-            
-            if (is_array($options)) {
-                // Get existing options IDs
-                $select = $read->select()
-                    ->from($table, 'option_id')
-                    ->where('source_id = ?', $object->getId());
-                
-                $existingIds = $read->fetchCol($select);
-                $foundIds    = array();
-                
-                foreach ($options as $option) {
-                    $values  = array(
-                        'source_id' => $object->getId(),
-                        'value'     => $option['value'],
-                        'label'     => $option['label'],
-                    );            
-                    
-                    if (($option['option_id'] > 0) 
-                        && in_array($option['option_id'], $existingIds)
-                        && (!isset($option['delete']) || !$option['delete'])) {
-                        // Existing option to update
+                if (!isset($option['delete']) || !$option['delete']) {
+                    if (in_array($option['option_id'], $existingIds)) {
                         $write->update(
                             $table,
                             $values,
                             $write->quoteInto('option_id = ?', $option['option_id'])
                         );
+                        
                         $foundIds[] = $option['option_id'];
-                    } elseif (!isset($option['delete']) || !$option['delete']) {
-                        // New (or not found for saved source) option to insert
+                    } else {
                         $write->insert($table, $values);
                     }
                 }
-                
-                // Remove missing / deleted options
-                $delete = array_diff($existingIds, $foundIds);
-                if (!empty($delete)) {
-                    foreach ($delete as $optionId) {
-                        $write->delete($table, $write->quoteInto('option_id = ?', $optionId));
-                    }
-                }
+            }
+            
+            $deletableIds = array_diff($existingIds, $foundIds);
+            
+            if (!empty($deletableIds)) {
+                $write->delete($table, $write->quoteInto('option_id IN (?)', $deletableIds));
             }
         }
         
-        return parent::_afterSave($object);
+        return $this;
+    }
+    
+    /**
+     * Save the Magento model config from the given source
+     * 
+     * @param Mage_Core_Model_Abstract $object Options source
+     * @return BL_CustomGrid_Model_Mysql4_Options_Source
+     */
+    protected function _saveMageModelConfig(Mage_Core_Model_Abstract $object)
+    {
+        $read  = $this->_getReadAdapter();
+        $write = $this->_getWriteAdapter();
+        $table = $this->getTable('customgrid/options_source_model');
+        $deleteWhere = array($write->quoteInto('source_id = ?', $object->getId()));
+        
+        if ($object->getModelId()) {
+            $deleteWhere[] = $write->quoteInto('model_id != ?', $object->getModelId());
+        }
+        
+        $write->delete($table, $deleteWhere);
+        
+        $values = array(
+            'source_id'   => $object->getId(),
+            'model_name'  => $object->getModelName(),
+            'model_type'  => $object->getModelType(),
+            'method'      => $object->getMethod(),
+            'return_type' => $object->getReturnType(),
+            'value_key'   => $object->getValueKey(),
+            'label_key'   => $object->getLabelKey(),
+        );
+        
+        $isModelUpdated = false;
+        
+        if ($object->getModelId()) {
+            $query = $read->select()
+                ->from($table)
+                ->where('source_id = '.$object->getId().' AND model_id = ?', $object->getModelId());
+            
+            if ($read->fetchOne($query)) {
+                $write->update(
+                    $table,
+                    $values,
+                    $write->quoteInto('model_id = ?', $object->getModelId())
+                );
+                
+                $isModelUpdated = true;
+            }
+        }
+        
+        if (!$isModelUpdated) {
+            $write->insert($table, $values);
+        }
+        
+        return $this;
     }
 }

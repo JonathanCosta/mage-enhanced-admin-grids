@@ -9,24 +9,14 @@
  *
  * @category   BL
  * @package    BL_CustomGrid
- * @copyright  Copyright (c) 2011 Benoît Leulliette <benoit.leulliette@gmail.com>
+ * @copyright  Copyright (c) 2015 Benoît Leulliette <benoit.leulliette@gmail.com>
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
-class BL_CustomGrid_Model_System_Config_Source_Exceptions_Handling_Mode
+class BL_CustomGrid_Model_System_Config_Source_Exceptions_Handling_Mode extends BL_CustomGrid_Model_Source_Fixed
 {
-    public function toOptionArray()
-    {
-        $helper = Mage::helper('customgrid');
-        return array(
-            array(
-                'value' => BL_CustomGrid_Helper_Config::GRID_EXCEPTION_HANDLING_EXCLUDE,
-                'label' => $helper->__('Exclude'),
-            ),
-            array(
-                'value' => BL_CustomGrid_Helper_Config::GRID_EXCEPTION_HANDLING_ALLOW,
-                'label' => $helper->__('Allow'),
-            ),
-         );
-    }
+    protected $_optionHash = array(
+        BL_CustomGrid_Helper_Config::GRID_EXCEPTION_HANDLING_MODE_EXCLUDE => 'Exclude',
+        BL_CustomGrid_Helper_Config::GRID_EXCEPTION_HANDLING_MODE_ALLOW   => 'Allow',
+    );
 }

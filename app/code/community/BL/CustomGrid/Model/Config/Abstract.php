@@ -34,204 +34,313 @@
  *
  * @category   BL
  * @package    BL_CustomGrid
- * @copyright  Copyright (c) 2011 Benoît Leulliette <benoit.leulliette@gmail.com>
+ * @copyright  Copyright (c) 2015 Benoît Leulliette <benoit.leulliette@gmail.com>
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
-abstract class BL_CustomGrid_Model_Config_Abstract extends Varien_Object
+abstract class BL_CustomGrid_Model_Config_Abstract extends BL_CustomGrid_Object
 {
-    protected $_acceptParameters = false;
+    /**
+     * Return the base helper of the given module, or a default helper if the other is not accessible
+     * 
+     * @param string $module Helper module
+     * @return Mage_Core_Helper_Abstract
+     */
+    protected function _getSafeHelper($module)
+    {
+        /** @var $helper BL_CustomGrid_Helper_Data */
+        $helper = Mage::helper('customgrid');
+        return $helper->getSafeHelper($module);
+    }
     
+    /**
+     * Return the config manager
+     * 
+     * @return BL_CustomGrid_Model_Config_Manager
+     */
+    protected function _getConfigManager()
+    {
+        return Mage::getSingleton('customgrid/config_manager');
+    }
+    
+    /**
+     * Return the handled configuration type
+     * 
+     * @return string
+     */
     abstract public function getConfigType();
     
+    /**
+     * Return whether the corresponding configuration elements do accept parameters
+     * 
+     * @return bool
+     */
+    public function getAcceptParameters()
+    {
+        return false;
+    }
+    
+    /**
+     * Return the corresponding XML configuration object
+     * 
+     * @return Varien_Simplexml_Config
+     */
     public function getXmlConfig()
     {
-        return Mage::getSingleton('customgrid/config')->getXmlConfig($this->getConfigType());
+        return $this->_getConfigManager()->getXmlConfig($this->getConfigType());
     }
     
-    public function getXmlElementByCode($code)
-    {
-        $elements = $this->getXmlConfig()->getXpath($code);
-        if (is_array($elements) && isset($elements[0]) 
-            && ($elements[0] instanceof Varien_Simplexml_Element)) {
-            return $elements[0];
-        }
-        return null;
-    }
-    
-    public function getConfigAsXml($code)
-    {
-        return $this->getXmlElementByCode($code);
-    }
-    
-    public function getElementsXml()
+    /**
+     * Return the root element from the XML configuration object
+     * 
+     * @return Varien_Simplexml_Element
+     */
+    public function getRootXmlElement()
     {
         return $this->getXmlConfig()->getNode();
     }
     
-    public function getConfigAsObject($code)
+    /**
+     * Return the codes of all the elements
+     * 
+     * @return string[]
+     */
+    public function getElementsCodes()
     {
-        $xml = $this->getConfigAsXml($code);
-        $object = new Varien_Object();
-        
-        if ($xml === null) {
-            return $object;
-        }
-        
-        // Save all nodes to object data
-        $object->setCode($code);
-        $object->setData($xml->asCanonicalArray());
-        
-        // Set module for translations etc..
-        $module = $object->getData('@/module');
-        $object->setModule($module ? $module : 'customgrid');
-        
-        // Set type
-        $type = $object->getData('@/type');
-        $object->setType($type);
-        
-        // Translate name, description and help
-        $helper = Mage::helper($object->getModule());
-        
-        if ($object->hasName()) {
-            $object->setName($helper->__((string)$object->getName()));
-        }
-        if ($object->hasDescription()) {
-            $object->setDescription($helper->__((string)$object->getDescription()));
-        }
-        if ($object->hasHelp()) {
-            $object->setHelp($helper->__((string)$object->getHelp()));
-        }
-        
-        if ($this->_acceptParameters) {
-            // Correct element parameters and convert its data to objects if needed
-            $params = $object->getData('parameters');
-            $newParams = array();
+        if (!$this->hasData('elements_codes')) {
+            $codes = array();
             
-            if (is_array($params)) {
-                $sortOrder = 0;
-                foreach ($params as $key => $data) {
-                    if (is_array($data)) {
-                        $data['key'] = $key;
-                        $data['sort_order'] = (isset($data['sort_order']) ? (int)$data['sort_order'] : $sortOrder);
-                        
-                        // Prepare values (for dropdowns) specified directly in configuration
-                        $values = array();
-                        if (isset($data['values']) && is_array($data['values'])) {
-                            foreach ($data['values'] as $value) {
-                                if (isset($value['label']) && isset($value['value'])) {
-                                    $values[] = $value;
-                                }
-                            }
-                        }
-                        $data['values'] = $values;
-                        
-                        // Prepare helper block object
-                        if (isset($data['helper_block'])) {
-                            $helper = new Varien_Object();
-                            if (isset($data['helper_block']['data']) && is_array($data['helper_block']['data'])) {
-                                $helper->addData($data['helper_block']['data']);
-                            }
-                            if (isset($data['helper_block']['type'])) {
-                                $helper->setType($data['helper_block']['type']);
-                            }
-                            $data['helper_block'] = $helper;
-                        }
-                        
-                        $newParams[$key] = new Varien_Object($data);
-                        $sortOrder++;
-                    }
-                }
+            foreach ($this->getRootXmlElement()->children() as $xmlElement) {
+                $codes[(int) $xmlElement->descend('sort_order')][] = $xmlElement->getName();
             }
             
-            uasort($newParams, array($this, '_sortParameters'));
-            $object->setData('parameters', $newParams);
+            ksort($codes, SORT_NUMERIC);
+            $sortedCodes = array();
+            
+            foreach ($codes as $codeGroup) {
+                $sortedCodes = array_merge($sortedCodes, array_values($codeGroup));
+            }
+            
+            $this->setData('elements_codes', $sortedCodes);
+        }
+        return $this->_getData('elements_codes');
+    }
+    
+    /**
+     * Return the XML element corresponding to the given element code
+     * 
+     * @param string $code Element code
+     * @return Varien_Simplexml_Element|null
+     */
+    public function getXmlElementByCode($code)
+    {
+        $dataKey = 'xml_element_' . $code;
+        
+        if (!$this->hasData($dataKey)) {
+            $xmlElement  = null;
+            $xmlElements = $this->getXmlConfig()->getXpath($code);
+            
+            if (is_array($xmlElements)
+                && isset($xmlElements[0]) 
+                && ($xmlElements[0] instanceof Varien_Simplexml_Element)) {
+                $xmlElement = $xmlElements[0];
+            }
+            
+            $this->setData($dataKey, $xmlElement);
         }
         
-        return $object;
+        return $this->_getData($dataKey);
     }
     
-    public function getElementArrayValues($element, $values, $helper)
+    /**
+     * Return whether the given element model corresponds to what is expected
+     * 
+     * @param mixed $model Element model
+     * @return bool
+     */
+    protected function _checkElementModelCompliance($model)
     {
-        return array();
+        return ($model instanceof BL_CustomGrid_Object);
     }
     
-    public function getElementsArray()
+    /**
+     * Callback for element parameters sorting
+     * 
+     * @param BL_CustomGrid_Object $paramA One parameter
+     * @param BL_CustomGrid_Object $paramB Another parameter
+     * @return int
+     */
+    protected function _sortElementParams(BL_CustomGrid_Object $paramA, BL_CustomGrid_Object $paramB)
     {
-        if (!$this->_getData('elements_array')) {
-            $result = array();
-            if ($this->getElementsXml()) {
-                foreach ($this->getElementsXml()->children() as $element) {
-                    $helper = $element->getAttribute('module') ? $element->getAttribute('module') : 'customgrid';
-                    $helper = Mage::helper($helper);
-                    
-                    $values = array(
-                        'code' => $element->getName(),
-                        'type' => $element->getAttribute('type'),
-                        'name' => $helper->__((string)$element->name),
-                        'help' => $helper->__((string)$element->help),
-                        'sort_order'  => (int)$element->sort_order,
-                        'description' => $helper->__((string)$element->description),
-                        'is_customizable' => $this->_acceptParameters,
-                    );
-                    $result[$element->getName()] = array_merge(
-                        $values,
-                        $this->getElementArrayValues($element, $values, $helper)
-                    );
-                }
+        return $paramA->compareIntDataTo('sort_order', $paramB);
+    }
+    
+    /**
+     * Parse the given raw parameters coming from a XML element into an array of prepared parameters objects
+     * 
+     * @param array $rawParams Raw parameters
+     * @return BL_CustomGrid_Object[]
+     */
+    protected function _parseXmlElementParamsArray(array $rawParams)
+    {
+        /** @var $configHelper BL_CustomGrid_Helper_Xml_Config */
+        $configHelper = Mage::helper('customgrid/xml_config');
+        $parsedParams = array();
+        $sortOrder = 0;
+        
+        foreach ($rawParams as $key => $data) {
+            if (is_array($data)) {
+                $data['key'] = $key;
+                $data['sort_order'] = (isset($data['sort_order']) ? (int) $data['sort_order'] : $sortOrder);
+                $data['values'] = $configHelper->getElementParamOptionsValues($data);
+                $data['helper_block'] = $configHelper->getElementParamHelperBlock($data);
+                $parsedParams[$key] = new BL_CustomGrid_Object($data);
+                ++$sortOrder;
             }
-            uasort($result, array($this, '_sortElements'));
-            $this->setData('elements_array', $result);
         }
-        return $this->_getData('elements_array');
+        
+        return $parsedParams;
     }
     
-    public function getElementInstanceByCode($code, $params=null)
+    /**
+     * Load and parse the parameters list from the given XML element into the given element model
+     * 
+     * @param BL_CustomGrid_Object $model Element model
+     * @param Varien_Simplexml_Element $xmlElement Corresponding XML element
+     * @return BL_CustomGrid_Model_Config_Abstract
+     */
+    protected function _loadElementModelParams(BL_CustomGrid_Object $model, Varien_Simplexml_Element $xmlElement)
     {
-        if ($element = $this->getXmlElementByCode($code)) {
-            if (!$this->_acceptParameters) {
-                return Mage::getSingleton($element->getAttribute('type'));
+        if ($this->getAcceptParameters() && ($paramsXmlElement = $xmlElement->descend('parameters'))) {
+            $params = $this->_parseXmlElementParamsArray($paramsXmlElement->asCanonicalArray());
+            uasort($params, array($this, '_sortElementParams'));
+        } else {
+            $params = array();
+        }
+        
+        $model->addData(
+            array(
+                'parameters' => $params,
+                'is_customizable' => !empty($params),
+            )
+        );
+        
+        return $this;
+    }
+    
+    /**
+     * Handle additional preparations on the given element model
+     * 
+     * @param BL_CustomGrid_Object $model Element model
+     * @param Varien_Simplexml_Element $xmlElement Corresponding XML element
+     * @return BL_CustomGrid_Model_Config_Abstract
+     */
+    protected function _prepareElementModel(BL_CustomGrid_Object $model, Varien_Simplexml_Element $xmlElement)
+    {
+        return $this;
+    }
+    
+    /**
+     * Return the model corresponding to the given element code
+     * 
+     * @param string $code Element code
+     * @return BL_CustomGrid_Object|null
+     */
+    public function getElementModelByCode($code)
+    {
+        $dataKey = 'element_model_' . $code;
+        
+        if (!$this->hasData($dataKey)) {
+            if (($xmlElement = $this->getXmlElementByCode($code))
+                && ($modelName = $xmlElement->getAttribute('model'))
+                && $this->_checkElementModelCompliance($model = Mage::getSingleton($modelName))) {
+                $module = ($xmlElement->getAttribute('module') ? $xmlElement->getAttribute('module') : 'customgrid');
+                $helper = $this->_getSafeHelper((string) $module);
+                
+                $model->setData(
+                    array(
+                        'code'   => $xmlElement->getName(),
+                        'type'   => $xmlElement->getAttribute('type'),
+                        'module' => $module,
+                        'name'   => $helper->__((string) $xmlElement->name),
+                        'help'   => $helper->__((string) $xmlElement->help),
+                        'helper' => $helper,
+                        'sort_order'  => (int) $xmlElement->{'sort_order'}, // CheckStyle validator / snake-case
+                        'description' => $helper->__((string) $xmlElement->description),
+                        'is_customizable' => false,
+                    )
+                );
+                
+                $this->_loadElementModelParams($model, $xmlElement);
+                $this->_prepareElementModel($model, $xmlElement);
             } else {
-                $instance = Mage::getModel($element->getAttribute('type'));
-                if ($instance && !is_null($params)) {
-                    if (is_array($params = $this->decodeParameters($params))) {
-                        $instance->addData($params);
-                    }
-                }
-                return $instance;
+                $model = null;
+            }
+            
+            $this->setData($dataKey, $model);
+        }
+        
+        return $this->_getData($dataKey);
+    }
+    
+    /**
+     * Callback for elements models sorting
+     * 
+     * @param BL_CustomGrid_Object $modelA One element model
+     * @param BL_CustomGrid_Object $modelB Another element model
+     * @return int
+     */
+    protected function _sortElementsModels(BL_CustomGrid_Object $modelA, BL_CustomGrid_Object $modelB)
+    {
+        $result = $modelA->compareIntDataTo('sort_order', $modelB);
+        return ($result === 0 ? $modelA->compareStringDataTo('name', $modelB) : $result);
+    }
+    
+    /**
+     * Return the models corresponding to the available elements
+     * 
+     * @param bool $sorted Whether the models should be sorted
+     * @return BL_CustomGrid_Object[]
+     */
+    public function getElementsModels($sorted = false)
+    {
+        $models = array();
+        
+        foreach ($this->getElementsCodes() as $code) {
+            if ($model = $this->getElementModelByCode($code)) {
+                $models[$code] = $model;
             }
         }
-        return null;
-    }
-    
-    public function encodeParameters($parameters)
-    {
-        if (is_array($parameters)) {
-            return serialize($parameters);
+        
+        if ($sorted) {
+            uasort($models, array($this, '_sortElementsModels'));
         }
-        return $parameters;
+        
+        return $models;
     }
     
-    public function decodeParameters($parameters)
+    /**
+     * Encode the given parameters into a string
+     * 
+     * @param mixed $params Parameters
+     * @return string
+     */
+    public function encodeParameters($params)
     {
-        if (is_string($parameters)) {
-            return unserialize($parameters);
+        return (is_array($params) ? serialize($params) : $params);
+    }
+    
+    /**
+     * Decode the given encoded parameters string
+     * 
+     * @param string $params Encoded parameters string
+     * @return array
+     */
+    public function decodeParameters($params)
+    {
+        if (is_string($params)) {
+            $params = unserialize($params);
         }
-        return $parameters;
-    }
-    
-    protected function _sortElements($a, $b)
-    {
-        $aOrder = $a['sort_order'];
-        $bOrder = $b['sort_order'];
-        return ($aOrder < $bOrder 
-            ? -1 : ($aOrder > $bOrder ? 1 : strcmp($a['name'], $b['name'])));
-    }
-    
-    protected function _sortParameters($a, $b)
-    {
-        $aOrder = (int)$a->getData('sort_order');
-        $bOrder = (int)$b->getData('sort_order');
-        return ($aOrder < $bOrder ? -1 : ($aOrder > $bOrder ? 1 : 0));
+        return (is_array($params) ? $params : array());
     }
 }

@@ -9,86 +9,66 @@
  *
  * @category   BL
  * @package    BL_CustomGrid
- * @copyright  Copyright (c) 2011 Benoît Leulliette <benoit.leulliette@gmail.com>
+ * @copyright  Copyright (c) 2015 Benoît Leulliette <benoit.leulliette@gmail.com>
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
-class Bl_CustomGrid_Block_Widget_Grid_Column_Filter_Price
-    extends Mage_Adminhtml_Block_Widget_Grid_Column_Filter_Abstract
+class Bl_CustomGrid_Block_Widget_Grid_Column_Filter_Price extends Mage_Adminhtml_Block_Widget_Grid_Column_Filter_Abstract
 {
-    protected $_currencyList  = null;
-    protected $_currencyModel = null;
+    /**
+     * Currency model
+     * 
+     * @var Mage_Directory_Model_Currency
+     */
+    protected $_currencyModel  = null;
+    
+    /**
+     * Allowed currencies list
+     * 
+     * @var array
+     */
+    protected $_currenciesList = null;
     
     public function getHtml()
     {
-        $html  = '<div class="range">';
-        $html .= '<div class="range-line"><span class="label">' . Mage::helper('adminhtml')->__('From').':</span> <input type="text" name="'.$this->_getHtmlName().'[from]" id="'.$this->_getHtmlId().'_from" value="'.$this->getEscapedValue('from').'" class="input-text no-changes"/></div>';
-        $html .= '<div class="range-line"><span class="label">' . Mage::helper('adminhtml')->__('To').' : </span><input type="text" name="'.$this->_getHtmlName().'[to]" id="'.$this->_getHtmlId().'_to" value="'.$this->getEscapedValue('to').'" class="input-text no-changes"/></div>';
+        $html = '<div class="range"><div class="range-line">'
+            . '<span class="label">' . $this->__('From') . ':</span> '
+            . '<input type="text" name="' . $this->_getHtmlName() . '[from]" id="' . $this->_getHtmlId() . '_from" '
+            .  'value="' . $this->getEscapedValue('from') . '" class="input-text no-changes"/>'
+            . '</div>'
+            . '<div class="range-line">'
+            . '<span class="label">' . $this->__('To') . ' : </span>'
+            . '<input type="text" name="' . $this->_getHtmlName() . '[to]" id="' . $this->_getHtmlId() . '_to" '
+            . 'value="' . $this->getEscapedValue('to') . '" class="input-text no-changes"/>'
+            . '</div>';
+        
         if ($this->getDisplayCurrencySelect()) {
-            $html .= '<div class="range-line"><span class="label">' . Mage::helper('adminhtml')->__('In').' : </span>' . $this->_getCurrencySelectHtml() . '</div>';
+            $html .= '<div class="range-line">'
+                . '<span class="label">' . $this->__('In') . ' : </span>'
+                . $this->_getCurrencySelectHtml()
+                . '</div>';
         }
+        
         $html .= '</div>';
         return $html;
     }
     
-    public function getDisplayCurrencySelect()
-    {
-        return $this->_getColumnOriginalCurrency();
-    }
-    
-    protected function _getCurrencyModel()
-    {
-        if (is_null($this->_currencyModel)) {
-            $this->_currencyModel = Mage::getModel('directory/currency');
-        }
-        return $this->_currencyModel;
-    }
-    
-    protected function _getCurrencySelectHtml()
-    {
-        $value = $this->getEscapedValue('currency');
-        if (!$value) {
-            $value = $this->_getColumnOriginalCurrency();
-        }
-        
-        $html  = '';
-        $html .= '<select name="'.$this->_getHtmlName().'[currency]" id="'.$this->_getHtmlId().'_currency">';
-        foreach ($this->_getCurrencyList() as $currency) {
-            $html .= '<option value="'.$currency.'" '.($currency == $value ? 'selected="selected"' : '').'>'.$currency.'</option>';
-        }
-        $html .= '</select>';
-        
-        return $html;
-    }
-    
-    protected function _getCurrencyList()
-    {
-        if (is_null($this->_currencyList)) {
-            $this->_currencyList = $this->_getCurrencyModel()->getConfigAllowCurrencies();
-        }
-        return $this->_currencyList;
-    }
-    
-    public function getValue($index=null)
+    public function getValue($index = null)
     {
         if ($index) {
             return $this->getData('value', $index);
         }
-        $value = $this->getData('value');
-        if ((isset($value['from']) && strlen($value['from']) > 0) 
-            || (isset($value['to']) && strlen($value['to']) > 0)) {
-            return $value;
+        
+        $value = $this->_getData('value');
+        
+        if (is_array($value)) {
+            if ((isset($value['from']) && strlen($value['from']) > 0) 
+                || (isset($value['to']) && strlen($value['to'])  > 0)) {
+                return $value;
+            }
         }
+        
         return null;
-    }
-    
-    protected function _getColumnOriginalCurrency()
-    {
-        if ($code = $this->getColumn()->getOriginalCurrencyCode()) {
-            return $code;
-        }
-        // Only a fixed currency code is usable for filtering
-        return false;
     }
     
     public function getCondition()
@@ -102,7 +82,7 @@ class Bl_CustomGrid_Block_Widget_Grid_Column_Filter_Price
                 $filterCurrency = $columnCurrency;
             }
             
-            $rate = $this->_getRate($filterCurrency, $columnCurrency);
+            $rate = $this->_getCurrenciesRate($filterCurrency, $columnCurrency);
             
             if (isset($value['from'])) {
                 $value['from'] *= $rate;
@@ -115,8 +95,90 @@ class Bl_CustomGrid_Block_Widget_Grid_Column_Filter_Price
         return $value;
     }
     
-    protected function _getRate($from, $to)
+    /**
+     * Return the code of the original currency
+     * 
+     * @return string
+     */
+    protected function _getColumnOriginalCurrency()
     {
-        return $this->_getCurrencyModel()->load($from)->getAnyRate($to);
+        // Only a fixed currency code is usable for filtering
+        return ($code = $this->getColumn()->getOriginalCurrencyCode())
+            ? $code
+            : false;
+    }
+    
+    /**
+     * Return whether the currency select can be displayed
+     * 
+     * @return bool
+     */
+    public function getDisplayCurrencySelect()
+    {
+        return $this->_getColumnOriginalCurrency();
+    }
+    
+    /**
+     * Return the currency model
+     * 
+     * @return Mage_Directory_Model_Currency
+     */
+    protected function _getCurrencyModel()
+    {
+        if (is_null($this->_currencyModel)) {
+            $this->_currencyModel = Mage::getModel('directory/currency');
+        }
+        return $this->_currencyModel;
+    }
+    
+    /**
+     * Return the allowed currencies list
+     * 
+     * @return string[]
+     */
+    protected function _getCurrenciesList()
+    {
+        if (is_null($this->_currenciesList)) {
+            $this->_currenciesList = $this->_getCurrencyModel()->getConfigAllowCurrencies();
+        }
+        return $this->_currenciesList;
+    }
+    
+    /**
+     * Return the conversion rate between the two given currencies
+     * 
+     * @param string $fromCurrency Base currency
+     * @param string $toCurrency Result currency
+     * @return float
+     */
+    protected function _getCurrenciesRate($fromCurrency, $toCurrency)
+    {
+        return $this->_getCurrencyModel()
+            ->load($fromCurrency)
+            ->getAnyRate($toCurrency);
+    }
+    
+    /**
+     * Return the HTML content of the currency select
+     * 
+     * @return string
+     */
+    protected function _getCurrencySelectHtml()
+    {
+        if (!$value = $this->_getColumnOriginalCurrency()) {
+            return '';
+        }
+        
+        $html = '<select name="' . $this->_getHtmlName() . '[currency]" id="' . $this->_getHtmlId() . '_currency">';
+        
+        foreach ($this->_getCurrenciesList() as $currency) {
+            $html .= '<option value="' . $this->htmlEscape($currency) . '" '
+                . ($currency == $value ? 'selected="selected"' : '') . '>'
+                . $this->htmlEscape($currency)
+                . '</option>';
+        }
+        
+        $html .= '</select>';
+        return $html;
     }
 }

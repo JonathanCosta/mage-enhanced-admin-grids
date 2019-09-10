@@ -9,38 +9,35 @@
  *
  * @category   BL
  * @package    BL_CustomGrid
- * @copyright  Copyright (c) 2011 Benoît Leulliette <benoit.leulliette@gmail.com>
+ * @copyright  Copyright (c) 2015 Benoît Leulliette <benoit.leulliette@gmail.com>
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
-class BL_CustomGrid_Model_Column_Renderer_Collection_Options
-    extends BL_CustomGrid_Model_Column_Renderer_Collection_Abstract
+class BL_CustomGrid_Model_Column_Renderer_Collection_Options extends BL_CustomGrid_Model_Column_Renderer_Collection_Abstract
 {
-    public function getColumnGridValues($index, $store, $grid)
-    {
-        if (($sourceId = $this->_getData('source_id'))
-             && ($source = Mage::getModel('customgrid/options_source')->load($sourceId))
-             && $source->getId()) {
-            $options = $source->getOptionsArray();
+    protected $_backwardsMap = array('options_separator' => 'sub_values_separator');
+    
+    public function getColumnBlockValues(
+        $columnIndex,
+        Mage_Core_Model_Store $store,
+        BL_CustomGrid_Model_Grid $gridModel
+    ) {
+        if (($sourceId = $this->getData('values/source_id'))
+            /** @var $source BL_CustomGrid_Model_Options_Source */
+            && ($source = Mage::getModel('customgrid/options_source')->load($sourceId))
+            && $source->getId()) {
+            $options = $source->getOptionArray();
         } else {
             $options = array();
         }
         
-        $implodedSeparator = $this->_getData('imploded_separator');
+        $implodedSeparator = $this->getData('values/imploded_separator');
+        
         if (empty($implodedSeparator) && ($implodedSeparator != '0')) {
             $implodedSeparator = ',';
         }
         
-        return array(
-            'filter'   => 'customgrid/widget_grid_column_filter_select',
-            'renderer' => 'customgrid/widget_grid_column_renderer_options',
-            'options'  => $options,
-            'boolean_filter'     => $this->_getData('boolean_filter'),
-            'display_full_path'  => $this->_getData('display_full_path'),
-            'options_separator'  => $this->_getData('options_separator'),
-            'imploded_values'    => $this->_getData('imploded_values'),
-            'imploded_separator' => $implodedSeparator,
-            'show_missing_option_values' => $this->_getData('show_missing'),
-        );
+        return $this->_getRendererHelper()
+            ->getOptionsValues($this, $options, (bool) $this->getData('values/imploded_values'), $implodedSeparator);
     }
 }

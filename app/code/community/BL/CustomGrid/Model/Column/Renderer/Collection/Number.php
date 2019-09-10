@@ -9,18 +9,17 @@
  *
  * @category   BL
  * @package    BL_CustomGrid
- * @copyright  Copyright (c) 2011 Benoît Leulliette <benoit.leulliette@gmail.com>
+ * @copyright  Copyright (c) 2015 Benoît Leulliette <benoit.leulliette@gmail.com>
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
-class BL_CustomGrid_Model_Column_Renderer_Collection_Number
-    extends BL_CustomGrid_Model_Column_Renderer_Collection_Abstract
+class BL_CustomGrid_Model_Column_Renderer_Collection_Number extends BL_CustomGrid_Model_Column_Renderer_Collection_Abstract
 {
-    public function getColumnGridValues($index, $store, $grid)
-    {
-        return array(
-            'type' => 'number',
-            'show_number_sign' => (bool)$this->_getData('show_number_sign'),
-        );
+    public function getColumnBlockValues(
+        $columnIndex,
+        Mage_Core_Model_Store $store,
+        BL_CustomGrid_Model_Grid $gridModel
+    ) {
+        return $this->_getRendererHelper()->getNumberValues($this);
     }
 }

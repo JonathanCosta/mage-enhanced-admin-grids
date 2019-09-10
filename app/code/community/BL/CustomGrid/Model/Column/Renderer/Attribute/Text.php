@@ -9,31 +9,32 @@
  *
  * @category   BL
  * @package    BL_CustomGrid
- * @copyright  Copyright (c) 2011 Benoît Leulliette <benoit.leulliette@gmail.com>
+ * @copyright  Copyright (c) 2015 Benoît Leulliette <benoit.leulliette@gmail.com>
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
-class BL_CustomGrid_Model_Column_Renderer_Attribute_Text
-    extends BL_CustomGrid_Model_Column_Renderer_Attribute_Abstract
+class BL_CustomGrid_Model_Column_Renderer_Attribute_Text extends BL_CustomGrid_Model_Column_Renderer_Attribute_Abstract
 {
-    public function isAppliableToColumn($attribute, $grid)
-    {
+    protected $_backwardsMap = array(
+        'truncate'        => 'truncation_mode',
+        'truncate_at'     => 'truncation_at',
+        'truncate_ending' => 'truncation_ending',
+        'truncate_exact'  => 'exact_truncation',
+        'parse_tags'      => 'cms_template_processor',
+    );
+    
+    public function isAppliableToAttribute(
+        Mage_Eav_Model_Entity_Attribute $attribute,
+        BL_CustomGrid_Model_Grid $gridModel
+    ) {
         return true;
     }
     
-    public function getColumnGridValues($attribute, $store, $grid)
-    {
-        return array(
-            'filter'          => 'adminhtml/widget_grid_column_filter_text',
-            'renderer'        => 'customgrid/widget_grid_column_renderer_text',
-            'truncate'        => $this->_getData('truncate'),
-            'truncate_at'     => $this->_getData('truncate_at'),
-            'truncate_ending' => $this->_getData('truncate_ending'),
-            'truncate_exact'  => $this->_getData('truncate_exact'),
-            'truncate_at'     => $this->_getData('truncate_at'),
-            'escape_html'     => $this->_getData('escape_html'),
-            'nl2br'           => $this->_getData('nl2br'),
-            'parse_tags'      => $this->_getData('parse_tags'),
-        );
+    public function getColumnBlockValues(
+        Mage_Eav_Model_Entity_Attribute $attribute,
+        Mage_Core_Model_Store $store,
+        BL_CustomGrid_Model_Grid $gridModel
+    ) {
+        return $this->_getRendererHelper()->getTextValues($this);
     }
 }

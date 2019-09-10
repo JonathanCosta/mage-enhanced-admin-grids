@@ -9,67 +9,67 @@
  *
  * @category   BL
  * @package    BL_CustomGrid
- * @copyright  Copyright (c) 2011 Benoît Leulliette <benoit.leulliette@gmail.com>
+ * @copyright  Copyright (c) 2015 Benoît Leulliette <benoit.leulliette@gmail.com>
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
-class BL_CustomGrid_Model_Grid_Type_Product_Tab
-    extends BL_CustomGrid_Model_Grid_Type_Abstract
+class BL_CustomGrid_Model_Grid_Type_Product_Tab extends BL_CustomGrid_Model_Grid_Type_Abstract
 {
-    public function isAppliableToGrid($type, $rewritingClassName)
+    protected function _getSupportedBlockTypes()
     {
-        return in_array(
-            $type,
-            array(
-                'adminhtml/catalog_product_edit_tab_related',
-                'adminhtml/catalog_product_edit_tab_upsell',
-                'adminhtml/catalog_product_edit_tab_crosssell',
-                'adminhtml/catalog_product_edit_tab_reviews',
-                'adminhtml/catalog_product_edit_tab_tag',
-                'adminhtml/catalog_product_edit_tab_tag_customer',
-            )
+        return array(
+            'adminhtml/catalog_product_edit_tab_related',
+            'adminhtml/catalog_product_edit_tab_upsell',
+            'adminhtml/catalog_product_edit_tab_crosssell',
+            'adminhtml/catalog_product_edit_tab_reviews',
+            'adminhtml/catalog_product_edit_tab_tag',
+            'adminhtml/catalog_product_edit_tab_tag_customer',
         );
     }
     
+    public function canExport($blockType)
+    {
+        /**
+         * Regarding products links grids, cloning collection does not clone Zend_Db_Select,
+         * and the _beforeLoad() corresponding collections methods join another tables each time,
+         * then twice on the same selects (resulting in correlations errors)
+         */
+        if ($this->isSupportedBlockType($blockType)) {
+            return !in_array(
+                $blockType,
+                array(
+                    'adminhtml/catalog_product_edit_tab_related',
+                    'adminhtml/catalog_product_edit_tab_upsell',
+                    'adminhtml/catalog_product_edit_tab_crosssell',
+                )
+            );
+        }
+        return true;
+    }
+    
+    /**
+     * Return the ID of the current product
+     * 
+     * @return int
+     */
     protected function _getProductId()
     {
-        if ($product = Mage::registry('current_product')) {
-            return $product->getId();
-        } else {
-            return Mage::app()->getRequest()->getParam('id', 0);
-        }
+        return ($product = Mage::registry('current_product'))
+            /** @var $product Mage_Catalog_Model_Product */
+            ? $product->getId()
+            : Mage::app()->getRequest()->getParam('id', 0);
     }
     
-    public function canExport($type)
+    protected function _getExportTypes($blockType)
     {
-        /*
-        For products links grids, cloning collection does not clone Zend_Db_Select,
-        and the _beforeLoad() corresponding collections methods join another tables each time,
-        then on the same selects = errors on correlations
-        */
-        return !in_array(
-            $type,
-            array(
-                'adminhtml/catalog_product_edit_tab_related',
-                'adminhtml/catalog_product_edit_tab_upsell',
-                'adminhtml/catalog_product_edit_tab_crosssell',
-            )
-        );
-    }
-    
-    protected function _getExportTypes($gridType)
-    {
-        $exportTypes = parent::_getExportTypes($gridType);
+        $exportTypes = parent::_getExportTypes($blockType);
+        $productId = $this->_getProductId();
         
-        foreach ($exportTypes as $key => $type) {
-            if (!isset($type['params'])) {
-                $exportTypes[$key]['params'] = array();
-            }
-            $exportTypes[$key]['params'] = array_merge(
-                $exportTypes[$key]['params'],
+        foreach ($exportTypes as $exportType) {
+            $exportType->addData(
                 array(
-                    'id'         => $this->_getProductId(),
-                    'product_id' => $this->_getProductId(),
+                    'url_params/id' => $productId,
+                    'url_params/product_id' => $productId,
                 )
             );
         }
@@ -77,30 +77,32 @@ class BL_CustomGrid_Model_Grid_Type_Product_Tab
         return $exportTypes;
     }
     
-    public function beforeGridExport($format, $grid=null)
+    public function beforeGridExport($format, Mage_Adminhtml_Block_Widget_Grid $gridBlock = null)
     {
-        if (is_null($grid)) {
-            // Register current product if needed
+        if (is_null($gridBlock)) {
             if (!Mage::registry('current_product')) {
-                if ($this->_getRequest()->getParam('product_id')) {
-                    $product = Mage::getModel('catalog/product')
-                        ->load($this->_getRequest()->getParam('product_id'));
+                if ($productId = $this->_getRequest()->getParam('product_id')) {
+                    /** @var $product Mage_Catalog_Model_Product */
+                    $product = Mage::getModel('catalog/product');
+                    $product->load($productId);
                 } else {
-                    // No product given : use a dummy unexisting one
-                    $product = new Varien_Object(array(
-                        'id' => false,
-                        'related_products' => array(),
-                        'up_sell_products' => array(),
-                        'cross_sell_products' => array(),
-                    ));
+                    // No product given : use a dummy object
+                    $product = new Varien_Object(
+                        array(
+                            'id'                  => false,
+                            'entity_id'           => false,
+                            'related_products'    => array(),
+                            'up_sell_products'    => array(),
+                            'cross_sell_products' => array(),
+                        )
+                    );
                 }
+                
                 Mage::register('current_product', $product);
             }
-        } else {
-            // Add product ID to grid block
-            if ($product = Mage::registry('current_product')) {
-                $grid->setProductId($product->getId());
-            }
+        } elseif ($product = Mage::registry('current_product')) {
+            $gridBlock->setProductId($product->getId());
         }
+        return $this;
     }
 }

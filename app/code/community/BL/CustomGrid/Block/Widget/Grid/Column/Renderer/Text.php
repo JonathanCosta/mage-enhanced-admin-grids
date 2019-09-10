@@ -9,50 +9,82 @@
  *
  * @category   BL
  * @package    BL_CustomGrid
- * @copyright  Copyright (c) 2011 Benoît Leulliette <benoit.leulliette@gmail.com>
+ * @copyright  Copyright (c) 2015 Benoît Leulliette <benoit.leulliette@gmail.com>
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
-class BL_CustomGrid_BLock_Widget_Grid_Column_Renderer_Text
-    extends Mage_Adminhtml_Block_Widget_Grid_Column_Renderer_Abstract
+class BL_CustomGrid_Block_Widget_Grid_Column_Renderer_Text extends Mage_Adminhtml_Block_Widget_Grid_Column_Renderer_Abstract
 {
-    public function render(Varien_Object $row)
+    const CMS_TEMPLATE_PROCESSOR_NONE  = 'none';
+    const CMS_TEMPLATE_PROCESSOR_BLOCK = 'block';
+    const CMS_TEMPLATE_PROCESSOR_PAGE  = 'page';
+    
+    const TRUNCATION_MODE_NONE = 'none';
+    const TRUNCATION_MODE_TEXT = 'text';
+    const TRUNCATION_MODE_HTML = 'html';
+    
+    /**
+     * Parse the given text value with the configured CMS template processor (if any)
+     * 
+     * @param string $textValue Parsable text value
+     * @return string
+     */
+    protected function _parseTextValue($textValue)
     {
-        $text = parent::_getValue($row);
-        
-        if ($parseTags = $this->getColumn()->getParseTags()) {
-            $processor = null;
-            if ($parseTags == 'block') {
-                $processor = Mage::helper('cms')->getBlockTemplateProcessor();
-            } elseif ($parseTags == 'page') {
-                $processor = Mage::helper('cms')->getPageTemplateProcessor();
+        if ($cmsProcessorType = $this->getColumn()->getCmsTemplateProcessor()) {
+            /** @var $cmsHelper Mage_Cms_Helper_Data */
+            $cmsHelper = $this->helper('cms');
+            $cmsProcessor = null;
+            
+            if ($cmsProcessorType == self::CMS_TEMPLATE_PROCESSOR_BLOCK) {
+                $cmsProcessor = $cmsHelper->getBlockTemplateProcessor();
+            } elseif ($cmsProcessorType == self::CMS_TEMPLATE_PROCESSOR_PAGE) {
+                $cmsProcessor = $cmsHelper->getPageTemplateProcessor();
             }
-            if (!is_null($processor)
-                && is_callable(array($processor, 'filter'))) {
-                $text = $processor->filter($text);
+            if (!is_null($cmsProcessor) && method_exists($cmsProcessor, 'filter')) {
+                $textValue = $cmsProcessor->filter($textValue);
             }
         }
+        return $textValue;
+    }
+    
+    public function render(Varien_Object $row)
+    {
+        $textValue = $this->_parseTextValue(parent::_getValue($row));
         
-        if (($truncate = $this->getColumn()->getTruncate())
-            && ($truncate != 'no')) {
-            $truncateHelper = $this->helper('customgrid/string');
-            $truncateLength = intval($this->getColumn()->getTruncateAt());
-            $truncateEnding = $this->getColumn()->getTruncateEnding();
-            $truncateExact  = (bool)$this->getColumn()->getTruncateExact();
+        if (($truncationMode = $this->getColumn()->getTruncationMode())
+            && ($truncationMode != self::TRUNCATION_MODE_NONE)) {
+            /** @var $stringHelper BL_CustomGrid_Helper_String */
+            $stringHelper = $this->helper('customgrid/string');
+            $truncationLength = (int) $this->getColumn()->getTruncationAt();
+            $truncationEnding = $this->getColumn()->getTruncationEnding();
+            $exactTruncation  = (bool) $this->getColumn()->getExactTruncation();
+            $remainder = '';
             
-            if ($truncate == 'html') {
-                $text = $truncateHelper->truncateHtml($text, $truncateLength, $truncateEnding, $remainder, !$truncateExact);
-            } else {
-                $text = $truncateHelper->truncateText($text, $truncateLength, $truncateEnding, $remainder, !$truncateExact);
+            if ($truncationMode == self::TRUNCATION_MODE_HTML) {
+                $textValue = $stringHelper->truncateHtml(
+                    $textValue,
+                    $truncationLength,
+                    $truncationEnding,
+                    !$exactTruncation
+                );
+            } elseif ($truncationMode == self::TRUNCATION_MODE_TEXT) {
+                $textValue = $stringHelper->truncateText(
+                    $textValue,
+                    $truncationLength,
+                    $truncationEnding,
+                    $remainder,
+                    !$exactTruncation
+                );
             }
         }
         if ($this->getColumn()->getEscapeHtml()) {
-            $text = $this->htmlEscape($text);
+            $textValue = $this->htmlEscape($textValue);
         }
         if ($this->getColumn()->getNl2br()) {
-            $text = nl2br($text);
+            $textValue = nl2br($textValue);
         }
         
-        return $text;
+        return $textValue;
     }
 }

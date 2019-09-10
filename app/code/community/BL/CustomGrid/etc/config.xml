@@ -141,7 +141,7 @@
     <default>
         <customgrid>
             <global>
-                <exclusions_list><![CDATA[a:5:{s:1:"1";a:2:{s:10:"block_type";s:18:"adminhtml/report_*";s:20:"rewriting_class_name";s:1:"*";}s:1:"2";a:2:{s:10:"block_type";s:33:"enhancedgrid/catalog_product_grid";s:20:"rewriting_class_name";s:1:"*";}s:1:"3";a:2:{s:10:"block_type";s:36:"adminhtml/newsletter_subscriber_grid";s:20:"rewriting_class_name";s:1:"*";}s:1:"4";a:2:{s:10:"block_type";s:34:"adminhtml/newsletter_template_grid";s:20:"rewriting_class_name";s:1:"*";}s:1:"5";a:2:{s:10:"block_type";s:36:"adminhtml/system_email_template_grid";s:20:"rewriting_class_name";s:1:"*";}}]]></exclusions_list>
+                <exclusions_list><![CDATA[a:5:{i:1;a:2:{s:10:"block_type";s:18:"adminhtml/report_*";s:20:"rewriting_class_name";s:1:"*";}i:2;a:2:{s:10:"block_type";s:33:"enhancedgrid/catalog_product_grid";s:20:"rewriting_class_name";s:1:"*";}i:3;a:2:{s:10:"block_type";s:36:"adminhtml/newsletter_subscriber_grid";s:20:"rewriting_class_name";s:1:"*";}i:4;a:2:{s:10:"block_type";s:34:"adminhtml/newsletter_template_grid";s:20:"rewriting_class_name";s:1:"*";}i:5;a:2:{s:10:"block_type";s:36:"adminhtml/system_email_template_grid";s:20:"rewriting_class_name";s:1:"*";}}]]></exclusions_list>
                 <exceptions_handling_mode>exclude</exceptions_handling_mode>
                 <store_parameter>store</store_parameter>
                 <sort_with_dnd>1</sort_with_dnd>

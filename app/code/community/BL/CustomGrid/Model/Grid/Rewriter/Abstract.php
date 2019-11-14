@@ -185,6 +185,23 @@ abstract class BL_CustomGrid_Model_Grid_Rewriter_Abstract extends BL_CustomGrid_
         return $collection;
     }
     
+    protected function _addColumnFilterToCollection($column)
+    {
+        if ($this->getCollection()) {
+            $field = ( $column->getFilterIndex() ) ? $column->getFilterIndex() : $column->getIndex();
+            if ($column->getFilterConditionCallback() && ($column->getFilterConditionCallback()[0] instanceof self ||
+                $column->getFilterConditionCallback()[0] instanceof BL_CustomGrid_Model_Custom_Column_Abstract)) {
+                call_user_func($column->getFilterConditionCallback(), $this->getCollection(), $column);
+            } else {
+                $cond = $column->getFilter()->getCondition();
+                if ($field && isset($cond)) {
+                    $this->getCollection()->addFieldToFilter($field , $cond);
+                }
+            }
+        }
+        return $this;
+    }
+    
     protected function _setFilterValues($data)
     {
         if (!$this->_blcg_holdPrepareCollection) {

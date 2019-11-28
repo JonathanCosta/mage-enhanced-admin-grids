@@ -15,7 +15,7 @@
 
 abstract class BL_CustomGrid_Model_Grid_Rewriter_Abstract extends BL_CustomGrid_Object
 {
-    const REWRITE_CODE_VERSION = 3; // bump this value when significant changes are made to the rewriting code
+    const REWRITE_CODE_VERSION = 4; // bump this value when significant changes are made to the rewriting code
     
     /**
      * Return the fixed base of the rewriting class names used by the extension
@@ -106,6 +106,22 @@ abstract class BL_CustomGrid_Model_Grid_Rewriter_Abstract extends BL_CustomGrid_
      */
     protected function _getRewriteCode($blcgClassName, $originalClassName, $blockType)
     {
+        $classNames = [
+            'BL_CustomGrid_Model_Custom_Column_Abstract',
+        ];
+        $transport = new Varien_Object();
+        $transport->setData('allowed_classes', $classNames);
+
+        Mage::dispatchEvent('blcg_collect_allowed_filter_callback_classes', [ 'transport' => $transport ]);
+
+        $classNames = $transport->getData('allowed_classes');
+
+        $instanceofConditions = [];
+        foreach ($classNames as $className) {
+            $instanceofConditions[] = '$column->getFilterConditionCallback()[0] instanceof '.$className;
+        }
+        $instanceofConditions = implode(' || ', $instanceofConditions);
+
         return 'class ' . $blcgClassName . ' extends ' . $originalClassName . '
 {
     private $_blcg_gridModel    = null;
@@ -189,7 +205,7 @@ abstract class BL_CustomGrid_Model_Grid_Rewriter_Abstract extends BL_CustomGrid_
     {
         if ($this->getCollection()) {
             if ($column->getFilterConditionCallback() &&
-                $column->getFilterConditionCallback()[0] instanceof BL_CustomGrid_Model_Custom_Column_Abstract) {
+                ('.$instanceofConditions.')) {
                 call_user_func($column->getFilterConditionCallback(), $this->getCollection(), $column);
             } else {
                 return parent::_addColumnFilterToCollection($column);

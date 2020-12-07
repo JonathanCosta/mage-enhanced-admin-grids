@@ -15,9 +15,9 @@
 
 class BL_CustomGrid_Blcg_Grid_ProfileController extends BL_CustomGrid_Controller_Grid_Action
 {
-    protected function _setActionSuccessJsonResponse(array $actions = array())
+    protected function _setActionSuccessJsonResponse(array $actions = array(), $withMessages = true)
     {
-        return parent::_setActionSuccessJsonResponse(array('actions' => $actions));
+        return parent::_setActionSuccessJsonResponse(array('actions' => $actions), $withMessages);
     }
     
     public function goToAction()

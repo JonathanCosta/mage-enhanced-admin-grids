@@ -206,7 +206,15 @@ class BL_CustomGrid_Model_Grid_Editor_Product extends BL_CustomGrid_Model_Grid_E
         
         /** @var Mage_Catalog_Model_Product $product */
         $product = Mage::getModel('catalog/product');
-        $product->setStoreId($storeId)->setData('_edit_mode', true)->load($entityId);
+        $product->setStoreId($storeId)->setData('_edit_mode', true);
+
+        /**
+         * Reset cached attributes in resource singleton and load new from product attributes set
+         */
+        $product->getResource()
+            ->unsetAttributes();
+
+        $product->load($entityId);
         
         return $product;
     }

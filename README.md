@@ -24,3 +24,14 @@ _This version includes the latest changes which are considered too experimental 
 - [X] rework the profiles bar so that the number of displayed profiles is adapted to the available width
 - [ ] rework the "Access All" profiles permission (make all the profiles be available from everywhere, except in the bar)
 - [ ] ~~rework the sales items columns (implement the advanced text filter, improve their extensibility, and allow to display a customizable value when exported)~~ **(later)**
+
+### Continuous changes (primary todo list)
+- write a FAQ page with the most common issues and questions
+- new custom columns for different grids (especially the sales grids)
+- better compatibility with certain grids
+- various small improvements
+
+### Other considered changes (secondary todo list)
+- profiles groups ?
+- start writing some tests (better late than never)
+

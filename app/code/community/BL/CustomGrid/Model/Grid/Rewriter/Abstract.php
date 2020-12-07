@@ -9,7 +9,7 @@
  *
  * @category   BL
  * @package    BL_CustomGrid
- * @copyright  Copyright (c) 2015 Benoît Leulliette <benoit.leulliette@gmail.com>
+ * @copyright  Copyright (c) 2016 Benoît Leulliette <benoit.leulliette@gmail.com>
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -144,6 +144,22 @@ abstract class BL_CustomGrid_Model_Grid_Rewriter_Abstract extends BL_CustomGrid_
      */
     protected function _getRewriteCode($blcgClassName, $originalClassName, $blockType)
     {
+        $classNames = [
+            'BL_CustomGrid_Model_Custom_Column_Abstract',
+        ];
+        $transport = new Varien_Object();
+        $transport->setData('allowed_classes', $classNames);
+
+        Mage::dispatchEvent('blcg_collect_allowed_filter_callback_classes', [ 'transport' => $transport ]);
+
+        $classNames = $transport->getData('allowed_classes');
+
+        $instanceofConditions = [];
+        foreach ($classNames as $className) {
+            $instanceofConditions[] = '$column->getFilterConditionCallback()[0] instanceof '.$className;
+        }
+        $instanceofConditions = implode(' || ', $instanceofConditions);
+
         return 'class ' . $blcgClassName . ' extends ' . $originalClassName . '
 {
     private $_blcg_gridModel    = null;
@@ -221,6 +237,19 @@ abstract class BL_CustomGrid_Model_Grid_Rewriter_Abstract extends BL_CustomGrid_
         }
         
         return $collection;
+    }
+    
+    protected function _addColumnFilterToCollection($column)
+    {
+        if ($this->getCollection()) {
+            if ($column->getFilterConditionCallback() &&
+                ('.$instanceofConditions.')) {
+                call_user_func($column->getFilterConditionCallback(), $this->getCollection(), $column);
+            } else {
+                return parent::_addColumnFilterToCollection($column);
+            }
+        }
+        return $this;
     }
     
     protected function _setFilterValues($data)

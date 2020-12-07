@@ -9,7 +9,7 @@
  *
  * @category   BL
  * @package    BL_CustomGrid
- * @copyright  Copyright (c) 2015 Benoît Leulliette <benoit.leulliette@gmail.com>
+ * @copyright  Copyright (c) 2016 Benoît Leulliette <benoit.leulliette@gmail.com>
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -21,6 +21,7 @@ class BL_CustomGrid_Block_Widget_Grid_Column_Renderer_Sales_Items_Sub_Value_Defa
      * @var string[]
      */
     static protected $_renderMethods = array(
+        'image'           => '_renderItemImage',
         'name'            => '_renderItemName',
         'sku'             => '_renderItemSku',
         'quantity'        => '_renderItemQty',
@@ -35,7 +36,24 @@ class BL_CustomGrid_Block_Widget_Grid_Column_Renderer_Sales_Items_Sub_Value_Defa
         'tax_percent'     => '_renderItemTaxPercent',
         'row_total'       => '_renderItemRowTotal',
     );
-    
+
+    /**
+     * Render the image of the current item.
+     *
+     * @return  string
+     */
+    protected function _renderItemImage()
+    {
+        try {
+            $product = Mage::getModel('catalog/product')->load($this->getItem()->getProductId());
+            $image = $this->helper('catalog/image')->init($product, 'thumbnail')->constrainOnly(true)->resize(50, 50);
+        } catch (Exception $e) {
+            $image = Mage::getDesign()->getSkinUrl('bl/customgrid/images/catalog/product/placeholder.jpg');
+        }
+
+        return sprintf('<img src="%s" alt="%s" style="max-width: 50px;" />', $image, $this->_renderItemName());
+    }
+
     /**
      * Render the name of the current item
      * 
@@ -43,7 +61,7 @@ class BL_CustomGrid_Block_Widget_Grid_Column_Renderer_Sales_Items_Sub_Value_Defa
      */
     protected function _renderItemName()
     {
-        return $this->htmlEscape($this->getItem()->getName());
+        return $this->escapeHtml($this->getItem()->getName());
     }
     
     /**
@@ -53,7 +71,7 @@ class BL_CustomGrid_Block_Widget_Grid_Column_Renderer_Sales_Items_Sub_Value_Defa
      */
     protected function _renderItemSku()
     {
-        return implode('<br />', $this->helper('catalog')->splitSku($this->htmlEscape($this->getItem()->getSku())));
+        return implode('<br />', $this->helper('catalog')->splitSku($this->escapeHtml($this->getItem()->getSku())));
     }
     
     /**
